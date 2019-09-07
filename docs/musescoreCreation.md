@@ -16,7 +16,7 @@ If you have music material you are sourcing, you may need to make some creative 
 You cannot have chords in pokecrystal, so you need to make doubly sure that you only have one note at a time per channel.
 Because of the way this works, you can still make chords, but using multiple channels.
 
-### Importing Midis
+### Importing MIDIs
 You can import midis into muscore, I'm not sure how to edit them though or cut out the channels, I'm sure there is a way, though.
 
 ### Saving your MusicXML

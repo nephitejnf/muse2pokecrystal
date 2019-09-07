@@ -7,6 +7,9 @@ muse2pokecrystal -h
 ```
 This shows the short flags to remind you incase you forget.
 
+`--score` or `-i` both take input.
+`--code` or `-o` both are your output.
+
 
 ```
 muse2pokecrystal --score <musicxml> --code <asm>
