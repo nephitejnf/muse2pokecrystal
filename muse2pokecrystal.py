@@ -45,11 +45,13 @@ def process_score(xmlfile, musicfile, nonoise):
             print("Converting Channel 4: {}".format(parts_list[3][1]))
             parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title)
         except IndexError:
-            print("No noise channel. Try running with the --noiseless option.")
+            print("\033[93mNo noise channel. Try running with the --noiseless option.")
+            print("\n\033[91m\033[1mConversion incomplete!")
             sys.exit(2)
 
     # close
     asmfile.close()
+    print("\n\033[92m\033[1mConversion success!")
 
 
 def noise_process(pitch):
