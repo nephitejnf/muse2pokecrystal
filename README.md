@@ -1,6 +1,8 @@
 # Muse2pokecrystal
-This is merely a script that takes musicxml and converts it to music code for pokecrystal. Musicxml is exported by programs such as musescore.
+A script that takes MusicXML and converts it to music code for pokecrystal.
+MusicXML is exported by programs such as [Musescore](https://musescore.org) and Finale Notepad.
 
-The script expects four different channels. Two square sound channels, one wave channel (of some sort (sine/saw)), and a drumset channel.
+The script expects at least three different channels: two square sound channels and one wave channel of some sort (sine/saw).
+The fourth drumset channel is optional.
 
-[See the results](https://www.youtube.com/watch?v=Iefmxd7u59o&feature=youtu.be)
+[See the results!](https://www.youtube.com/watch?v=Iefmxd7u59o&feature=youtu.be)
