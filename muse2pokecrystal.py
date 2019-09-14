@@ -7,7 +7,7 @@ import sys, getopt
 asmfile = None
 # <part-list><score-part id=""><part-name>Name</partname></score-part></part-list>
 # <part id=""><measure number="1"><notes /></measure></part>
-def process_score(xmlfile, musicfile):
+def process_score(xmlfile, musicfile, nonoise):
     global asmfile
     asmfile = open(musicfile, "w")
     # (part id, part-name)
@@ -21,20 +21,32 @@ def process_score(xmlfile, musicfile):
     for part in parts.findall('score-part'):
         parts_list.append((part.get('id'), part.find('part-name').text))
 
+    # the --noiseless parameter tells us whether we should ignore channel 4
     print("adding Header info")
     asmfile.write("Music_{}:\n".format(pointer_title))
-    asmfile.write("\tmusicheader 4, 1, Music_{}_Ch1\n".format(pointer_title))
+    if nonoise:
+        asmfile.write("\tmusicheader 3, 1, Music_{}_Ch1\n".format(pointer_title))
+    else:
+        asmfile.write("\tmusicheader 4, 1, Music_{}_Ch1\n".format(pointer_title))
     asmfile.write("\tmusicheader 1, 2, Music_{}_Ch2\n".format(pointer_title))
     asmfile.write("\tmusicheader 1, 3, Music_{}_Ch3\n".format(pointer_title))
-    asmfile.write("\tmusicheader 1, 4, Music_{}_Ch4\n\n\n".format(pointer_title))
+    if not nonoise:
+        asmfile.write("\tmusicheader 1, 4, Music_{}_Ch4\n\n\n".format(pointer_title))
+
     print("Converting Channel 1: {}".format(parts_list[0][1]))
     parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title)
     print("Converting Channel 2: {}".format(parts_list[1][1]))
     parse_channel2(xmlroot.find("./part[@id='{}']".format(parts_list[1][0])), pointer_title)
     print("Converting Channel 3: {}".format(parts_list[2][1]))
     parse_channel3(xmlroot.find("./part[@id='{}']".format(parts_list[2][0])), pointer_title)
-    print("Converting Channel 4: {}".format(parts_list[3][1]))
-    parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title)
+
+    if not nonoise:
+        try:
+            print("Converting Channel 4: {}".format(parts_list[3][1]))
+            parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title)
+        except IndexError:
+            print("No noise channel. Try running with the --noiseless option.")
+            sys.exit(2)
 
     # close
     asmfile.close()
@@ -231,8 +243,9 @@ def parse_channel4(part, title):
 def main(argv):
     infile = ""
     outfile = ""
+    noiseless = False
     try:
-        opts, args = getopt.getopt(argv,"hi:o:",["score=","code="])
+        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "noiseless"])
     except getopt.GetoptError:
         print('muse2pokecrystal -i <musicxml> -o <music code>')
         sys.exit(2)
@@ -244,7 +257,9 @@ def main(argv):
             infile = arg
         elif opt in ("-o", "--code"):
             outfile = arg
-    process_score(infile, outfile)
+        elif opt in ("--noiseless"):
+            noiseless = True
+    process_score(infile, outfile, noiseless)
 
 if __name__=="__main__":
     main(sys.argv[1:])
