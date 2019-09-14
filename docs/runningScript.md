@@ -19,6 +19,13 @@ This is just the long form of
 muse2pokecrystal -i <musicxml> -o <asm>
 ```
 
+If you want don't want to parse the noise channel or file doesn't have a drumset,
+use the `--noiseless` option:
+```
+muse2pokecrystal -i <musicxml> -o <asm> --noiseless
+```
+This will only output channels 1 through 3 and edit the header accordingly.
+
 This can be run locally in your folder of placed in your binaries.
 It requires Python 3 to run (sorry Python 2 bois).
 
