@@ -74,9 +74,8 @@ def parse_channel1(part, title):
     asmfile.write("Music_{}_Ch1:\n".format(title))
     asmfile.write("\ttempo {}\n".format(int(19200/int(part.find('./measure/direction/sound').get('tempo')))))
     asmfile.write("\tvolume $77\n")
-    asmfile.write("\tnotetype $c, $00\n")
+    asmfile.write("\tnotetype $c, $95\n")
     asmfile.write("\tdutycycle $2\n")
-    asmfile.write("\tintensity $95\n")
     asmfile.write("Music_{}_Ch1_Loop:\n".format(title))
     curroctave = 4
     asmfile.write("\toctave {}\n".format(curroctave))
@@ -122,9 +121,8 @@ def parse_channel2(part, title):
     # default header stuff
     asmfile.write("Music_{}_Ch2:\n".format(title))
     asmfile.write("\tvolume $77\n")
-    asmfile.write("\tnotetype $c, $00\n")
+    asmfile.write("\tnotetype $c, $95\n")
     asmfile.write("\tdutycycle $2\n")
-    asmfile.write("\tintensity $95\n")
     asmfile.write("Music_{}_Ch2_Loop:\n".format(title))
     curroctave = 4
     asmfile.write("\toctave {}\n".format(curroctave))
@@ -168,8 +166,7 @@ def parse_channel2(part, title):
 def parse_channel3(part, title):
     global asmfile
     asmfile.write("Music_{}_Ch3:\n".format(title))
-    asmfile.write("\tnotetype $c, $00\n")
-    asmfile.write("\tintensity $95\n")
+    asmfile.write("\tnotetype $c, $15\n")
     asmfile.write("Music_{}_Ch3_Loop:\n".format(title))
     # redundant note parsing code, note very efficient when copypastad
     curroctave = 4
