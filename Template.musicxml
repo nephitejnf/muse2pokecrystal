@@ -40,10 +40,7 @@
     <lyric-font font-family="FreeSerif" font-size="11"/>
     </defaults>
   <credit page="1">
-    <credit-words default-x="595.275" default-y="1600.05" justify="center" valign="top" font-size="24">GB Template</credit-words>
-    </credit>
-  <credit page="1">
-    <credit-words default-x="595.275" default-y="1626.95" justify="center" valign="top" font-size="14">If you don't need the noise channel press &quot;i&quot; and remove the drumset</credit-words>
+    <credit-words default-x="595.275" default-y="1627.01" justify="center" valign="top" font-size="24">GB Template</credit-words>
     </credit>
   <part-list>
     <part-group type="start" number="1">
@@ -108,6 +105,7 @@
       <midi-device id="P4-I1" port="1"></midi-device>
       <midi-instrument id="P4-I1">
         <midi-channel>4</midi-channel>
+        <midi-program>1</midi-program>
         <volume>78.7402</volume>
         <pan>0</pan>
         </midi-instrument>
@@ -122,7 +120,7 @@
             <left-margin>212.60</left-margin>
             <right-margin>-0.00</right-margin>
             </system-margins>
-          <top-system-distance>143.23</top-system-distance>
+          <top-system-distance>121.90</top-system-distance>
           </system-layout>
         </print>
       <attributes>

@@ -22,7 +22,7 @@ def process_score(xmlfile, musicfile, nonoise):
         parts_list.append((part.get('id'), part.find('part-name').text))
 
     # the --noiseless parameter tells us whether we should ignore channel 4
-    print("adding Header info")
+    print("\033[93mAdding Header Info\033[0m")
     asmfile.write("Music_{}:\n".format(pointer_title))
     if nonoise:
         asmfile.write("\tmusicheader 3, 1, Music_{}_Ch1\n".format(pointer_title))
@@ -32,19 +32,18 @@ def process_score(xmlfile, musicfile, nonoise):
     asmfile.write("\tmusicheader 1, 3, Music_{}_Ch3\n".format(pointer_title))
     if not nonoise:
         asmfile.write("\tmusicheader 1, 4, Music_{}_Ch4\n".format(pointer_title))
-
     asmfile.write("\n\n")
 
-    print("Converting Channel 1: {}".format(parts_list[0][1]))
+    print("Converting Channel 1: \033[95m{}\033[0m".format(parts_list[0][1]))
     parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title)
-    print("Converting Channel 2: {}".format(parts_list[1][1]))
+    print("Converting Channel 2: \033[95m{}\033[0m".format(parts_list[1][1]))
     parse_channel2(xmlroot.find("./part[@id='{}']".format(parts_list[1][0])), pointer_title)
-    print("Converting Channel 3: {}".format(parts_list[2][1]))
+    print("Converting Channel 3: \033[95m{}\033[0m".format(parts_list[2][1]))
     parse_channel3(xmlroot.find("./part[@id='{}']".format(parts_list[2][0])), pointer_title)
 
     if not nonoise:
         try:
-            print("Converting Channel 4: {}".format(parts_list[3][1]))
+            print("Converting Channel 4: \033[95m{}\033[0m".format(parts_list[3][1]))
             parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title)
         except IndexError:
             print("\033[93mNo noise channel. Try running with the --noiseless option.")
@@ -53,8 +52,50 @@ def process_score(xmlfile, musicfile, nonoise):
 
     # close
     asmfile.close()
-    print("\n\033[92m\033[1mConversion success!")
+    parity_check(musicfile, nonoise)
+    print("\033[92m\033[1mConversion success!")
 
+# checks the length of each channel to prevent desyncing
+def parity_check(musicfile, nonoise):
+    curchannel = 0
+    channelcntarray = [0, 0, 0, 0]
+    asmread = open(musicfile, "r")
+    filearray = asmread.readlines()
+    for line in filearray:
+        if "_Ch1_Loop" in line:
+            curchannel = 1
+        if "_Ch2_Loop" in line:
+            curchannel = 2
+        if "_Ch3_Loop" in line:
+            curchannel = 3
+        if "_Ch4_Loop" in line:
+            curchannel = 4
+        elif "note" in line and not "type" in line:
+            channelcntarray[curchannel - 1] += int(line[9:])
+    curchannel = 0
+    if nonoise:
+        for channelcnt in channelcntarray[:3]:
+            if channelcnt != channelcntarray[0]:
+                print("\n\033[91m\033[1mParity check failed!")
+                print("Check that there is only one note per channel!\033[0m")
+                for item in channelcntarray[:3]:
+                    if channelcnt == item:
+                        print("\033[91m\033[1m" + str(item) + "\033[0m")
+                    else:
+                        print("\033[93m" + str(item) + "\033[0m")
+                sys.exit(1)
+    else:
+        for channelcnt in channelcntarray:
+            if channelcnt != channelcntarray[0]:
+                print("\n\033[91m\033[1mParity check failed!")
+                print("Check that there is only one note per channel!\033[0m")
+                for item in channelcntarray:
+                    if channelcnt == item:
+                        print("\033[91m\033[1m" + str(item) + "\033[0m")
+                    else:
+                        print("\033[93m" + str(item) + "\033[0m")
+                sys.exit(1)
+    print("\n\033[94mParity check succeeded!")
 
 def noise_process(pitch):
     altered = pitch.find('alter')
