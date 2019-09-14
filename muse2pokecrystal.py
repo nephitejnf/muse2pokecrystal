@@ -31,7 +31,9 @@ def process_score(xmlfile, musicfile, nonoise):
     asmfile.write("\tmusicheader 1, 2, Music_{}_Ch2\n".format(pointer_title))
     asmfile.write("\tmusicheader 1, 3, Music_{}_Ch3\n".format(pointer_title))
     if not nonoise:
-        asmfile.write("\tmusicheader 1, 4, Music_{}_Ch4\n\n\n".format(pointer_title))
+        asmfile.write("\tmusicheader 1, 4, Music_{}_Ch4\n".format(pointer_title))
+
+    asmfile.write("\n\n")
 
     print("Converting Channel 1: {}".format(parts_list[0][1]))
     parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title)
@@ -259,7 +261,7 @@ def main(argv):
             infile = arg
         elif opt in ("-o", "--code"):
             outfile = arg
-        elif opt in ("--noiseless"):
+        elif opt in (s"--noiseless"):
             noiseless = True
     process_score(infile, outfile, noiseless)
 
