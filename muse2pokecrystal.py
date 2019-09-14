@@ -261,7 +261,7 @@ def main(argv):
             infile = arg
         elif opt in ("-o", "--code"):
             outfile = arg
-        elif opt in (s"--noiseless"):
+        elif opt in ("--noiseless"):
             noiseless = True
     process_score(infile, outfile, noiseless)
 
