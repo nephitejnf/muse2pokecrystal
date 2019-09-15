@@ -7,7 +7,7 @@ import sys, getopt
 asmfile = None
 # <part-list><score-part id=""><part-name>Name</partname></score-part></part-list>
 # <part id=""><measure number="1"><notes /></measure></part>
-def process_score(xmlfile, musicfile, nonoise):
+def process_score(xmlfile, musicfile, nonoise, manualtempo, tempo):
     global asmfile
     asmfile = open(musicfile, "w")
     # (part id, part-name)
@@ -35,7 +35,7 @@ def process_score(xmlfile, musicfile, nonoise):
     asmfile.write("\n\n")
 
     print("Converting Channel 1: \033[95m{}\033[0m".format(parts_list[0][1]))
-    parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title)
+    parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title, manualtempo, tempo)
     print("Converting Channel 2: \033[95m{}\033[0m".format(parts_list[1][1]))
     parse_channel2(xmlroot.find("./part[@id='{}']".format(parts_list[1][0])), pointer_title)
     print("Converting Channel 3: \033[95m{}\033[0m".format(parts_list[2][1]))
@@ -46,7 +46,7 @@ def process_score(xmlfile, musicfile, nonoise):
             print("Converting Channel 4: \033[95m{}\033[0m".format(parts_list[3][1]))
             parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title)
         except IndexError:
-            print("\033[93mNo noise channel. Try running with the --noiseless option.")
+            print("\033[93mNo noise channel. Try running with the --noiseless parameter.")
             print("\n\033[91m\033[1mConversion incomplete!")
             sys.exit(2)
 
@@ -125,11 +125,20 @@ def note_process(pitch):
 
 # tempo, volume, dutycycle, tone, vibrato, notetype, octave, stereopanning
 # <tie type="start" (type="stop")/>
-def parse_channel1(part, title):
+def parse_channel1(part, title, manualtempo, tempo):
     global asmfile
     # parse channel 1 header stuff
     asmfile.write("Music_{}_Ch1:\n".format(title))
-    asmfile.write("\ttempo {}\n".format(int(19200/int(part.find('./measure/direction/sound').get('tempo')))))
+    # Try to auto detect tempo, or get it from the user
+    if not manualtempo:
+        try:
+        	asmfile.write("\ttempo {}\n".format(int(19200/int(part.find('./measure/direction/sound').get('tempo')))))
+        except TypeError:
+            print("\033[93mNo tempo was detected. Use try again with the --tempo parameter.")
+            print("\n\033[91m\033[1mConversion incomplete!")
+            sys.exit(2)
+    else:
+        asmfile.write("\ttempo {}\n".format(int(19200/int(tempo))))
     asmfile.write("\tvolume $77\n")
     asmfile.write("\tnotetype $c, $95\n")
     asmfile.write("\tdutycycle $2\n")
@@ -289,8 +298,10 @@ def main(argv):
     infile = ""
     outfile = ""
     noiseless = False
+    speedoverride = False
+    speed = 120
     try:
-        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "noiseless"])
+        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "tempo=", "noiseless"])
     except getopt.GetoptError:
         print('muse2pokecrystal -i <musicxml> -o <music code>')
         sys.exit(2)
@@ -302,9 +313,12 @@ def main(argv):
             infile = arg
         elif opt in ("-o", "--code"):
             outfile = arg
+        elif opt in ("--tempo"):
+            speed = arg
+            speedoverride = True
         elif opt in ("--noiseless"):
             noiseless = True
-    process_score(infile, outfile, noiseless)
+    process_score(infile, outfile, noiseless, speedoverride, speed)
 
 if __name__=="__main__":
     main(sys.argv[1:])
