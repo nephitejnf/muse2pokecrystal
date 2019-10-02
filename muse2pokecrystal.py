@@ -123,6 +123,44 @@ def note_process(pitch):
     noted = "{}{}".format(step, nibble)
     return noted
 
+def note_print(part):
+    curroctave = 4
+    asmfile.write("\toctave {}\n".format(curroctave))
+    tied = False
+    step = ''
+    dura = 0
+    # redundant note parsing code, note very efficient when copypastad
+    for measure in part.findall('measure'):
+        for note in measure.findall('note'):
+            t = ""
+            if note.find('rest') is not None:
+                asmfile.write("\tnote __, {}\n".format(note.find('duration').text))
+            elif note.find('pitch') is None:
+                print('None?')
+            else:
+                pitch = note.find('pitch')
+                if int(pitch.find('octave').text) is not curroctave:
+                    curroctave = int(pitch.find('octave').text)
+                    asmfile.write("\toctave {}\n".format(curroctave))
+                if note.find('./tie[@type="start"]') is not None and note.find('./tie[@type="stop"]') is not None:
+                    dura += int(note.find('duration').text)
+                elif note.find('./tie[@type="start"]') is not None:
+                    tied = True
+                    step = note_process(pitch)
+                    dura = int(note.find('duration').text)
+                elif note.find('./tie[@type="stop"]') is not None:
+                    if step == note_process(pitch):
+                        t = "\tnote {}, {}\n".format(note_process(pitch),int(note.find('duration').text)+dura)
+                    else:
+                        asmfile.write("\tnote {}, {}\n".format(step,dura))
+                        t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
+                    tied = False
+                    step = ''
+                    dura = 0
+                else:
+                    t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
+                if t != None: asmfile.write(t)
+
 # tempo, volume, dutycycle, tone, vibrato, notetype, octave, stereopanning
 # <tie type="start" (type="stop")/>
 def parse_channel1(part, title, manualtempo, tempo):
@@ -143,42 +181,7 @@ def parse_channel1(part, title, manualtempo, tempo):
     asmfile.write("\tnotetype $c, $95\n")
     asmfile.write("\tdutycycle $2\n")
     asmfile.write("Music_{}_Ch1_Loop:\n".format(title))
-    curroctave = 4
-    asmfile.write("\toctave {}\n".format(curroctave))
-    tied = False
-    step = ''
-    dura = 0
-    # redundant note parsing code, note very efficient when copypastad
-    for measure in part.findall('measure'):
-        for note in measure.findall('note'):
-            t = ""
-            if note.find('rest') is not None:
-                asmfile.write("\tnote __, {}\n".format(note.find('duration').text))
-            elif note.find('pitch') is None:
-                print('None?')
-            else:
-                pitch = note.find('pitch')
-                if int(pitch.find('octave').text) is not curroctave:
-                    curroctave = int(pitch.find('octave').text)
-                    asmfile.write("\toctave {}\n".format(curroctave))
-                if note.find('./tie[@type="start"]') is not None and note.find('./tie[@type="stop"]') is not None:
-                    dura += int(note.find('duration').text)
-                elif note.find('./tie[@type="start"]') is not None:
-                    tied = True
-                    step = note_process(pitch)
-                    dura = int(note.find('duration').text)
-                elif note.find('./tie[@type="stop"]') is not None:
-                    if step == note_process(pitch):
-                        t = "\tnote {}, {}\n".format(note_process(pitch),int(note.find('duration').text)+dura)
-                    else:
-                        asmfile.write("\tnote {}, {}\n".format(step,dura))
-                        t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
-                    tied = False
-                    step = ''
-                    dura = 0
-                else:
-                    t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
-                if t != None: asmfile.write(t)
+    note_print(part)
     asmfile.write("\tloopchannel 0, Music_{}_Ch1_Loop\n\n\n".format(title))
 
 # dutycycle, tone, vibrato, notetype, octave, stereopanning
@@ -190,42 +193,7 @@ def parse_channel2(part, title):
     asmfile.write("\tnotetype $c, $95\n")
     asmfile.write("\tdutycycle $2\n")
     asmfile.write("Music_{}_Ch2_Loop:\n".format(title))
-    curroctave = 4
-    asmfile.write("\toctave {}\n".format(curroctave))
-    tied = False
-    step = ''
-    dura = 0
-    # redundant note parsing code, note very efficient when copypastad
-    for measure in part.findall('measure'):
-        for note in measure.findall('note'):
-            t = ""
-            if note.find('rest') is not None:
-                asmfile.write("\tnote __, {}\n".format(note.find('duration').text))
-            elif note.find('pitch') is None:
-                print('None?')
-            else:
-                pitch = note.find('pitch')
-                if int(pitch.find('octave').text) is not curroctave:
-                    curroctave = int(pitch.find('octave').text)
-                    asmfile.write("\toctave {}\n".format(curroctave))
-                if note.find('./tie[@type="start"]') is not None and note.find('./tie[@type="stop"]') is not None:
-                    dura += int(note.find('duration').text)
-                elif note.find('./tie[@type="start"]') is not None:
-                    tied = True
-                    step = note_process(pitch)
-                    dura = int(note.find('duration').text)
-                elif note.find('./tie[@type="stop"]') is not None:
-                    if step == note_process(pitch):
-                        t = "\tnote {}, {}\n".format(note_process(pitch),int(note.find('duration').text)+dura)
-                    else:
-                        asmfile.write("\tnote {}, {}\n".format(step,dura))
-                        t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
-                    tied = False
-                    step = ''
-                    dura = 0
-                else:
-                    t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
-                if t != None: asmfile.write(t)
+    note_print(part)
     asmfile.write("\tloopchannel 0, Music_{}_Ch2_Loop\n\n\n".format(title))
 
 # stereopanning, vibrato, notetype, tone, octave
@@ -234,42 +202,7 @@ def parse_channel3(part, title):
     asmfile.write("Music_{}_Ch3:\n".format(title))
     asmfile.write("\tnotetype $c, $15\n")
     asmfile.write("Music_{}_Ch3_Loop:\n".format(title))
-    # redundant note parsing code, note very efficient when copypastad
-    curroctave = 4
-    asmfile.write("\toctave {}\n".format(curroctave))
-    tied = False
-    step = ''
-    dura = 0
-    for measure in part.findall('measure'):
-        for note in measure.findall('note'):
-            t = ""
-            if note.find('rest') is not None:
-                asmfile.write("\tnote __, {}\n".format(note.find('duration').text))
-            elif note.find('pitch') is None:
-                print('None?')
-            else:
-                pitch = note.find('pitch')
-                if int(pitch.find('octave').text) is not curroctave:
-                    curroctave = int(pitch.find('octave').text)
-                    asmfile.write("\toctave {}\n".format(curroctave))
-                if note.find('./tie[@type="start"]') is not None and note.find('./tie[@type="stop"]') is not None:
-                    dura += int(note.find('duration').text)
-                elif note.find('./tie[@type="start"]') is not None:
-                    tied = True
-                    step = note_process(pitch)
-                    dura = int(note.find('duration').text)
-                elif note.find('./tie[@type="stop"]') is not None:
-                    if step == note_process(pitch):
-                        t = "\tnote {}, {}\n".format(note_process(pitch),int(note.find('duration').text)+dura)
-                    else:
-                        asmfile.write("\tnote {}, {}\n".format(step,dura))
-                        t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
-                    tied = False
-                    step = ''
-                    dura = 0
-                else:
-                    t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
-                if t != None: asmfile.write(t)
+    note_print(part)
     asmfile.write("\tloopchannel 0, Music_{}_Ch3_Loop\n\n\n".format(title))
 
 # notetype, togglenoise
