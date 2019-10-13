@@ -15,7 +15,11 @@ def process_score(xmlfile, musicfile, nonoise, manualtempo, tempo):
 
     ScoreTree = parse(xmlfile)
     xmlroot = ScoreTree.getroot()
-    song_title = xmlroot.find('./work/work-title').text
+    try:
+    	song_title = xmlroot.find('./work/work-title').text
+    except AttributeError:
+        print("\033[93mCould not guess song name. Using generic name.\033[0m")
+        song_title = "Music Song"
     pointer_title = song_title.replace(':', '').replace(' ','')
     parts = xmlroot.find('part-list')
     for part in parts.findall('score-part'):
