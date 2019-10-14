@@ -7,7 +7,7 @@ import sys, getopt
 asmfile = None
 # <part-list><score-part id=""><part-name>Name</partname></score-part></part-list>
 # <part id=""><measure number="1"><notes /></measure></part>
-def process_score(xmlfile, musicfile, nonoise, manualtempo, tempo):
+def process_score(xmlfile, musicfile, nonoise, manualtempo, tempo, song_title, provided_name):
     global asmfile
     asmfile = open(musicfile, "w")
     # (part id, part-name)
@@ -15,11 +15,11 @@ def process_score(xmlfile, musicfile, nonoise, manualtempo, tempo):
 
     ScoreTree = parse(xmlfile)
     xmlroot = ScoreTree.getroot()
-    try:
-    	song_title = xmlroot.find('./work/work-title').text
-    except AttributeError:
-        print("\033[93mCould not guess song name. Using generic name.\033[0m")
-        song_title = "Music Song"
+    if provided_name is False:
+        try:
+            song_title = xmlroot.find('./work/work-title').text
+        except AttributeError:
+            print("\033[93mCould not guess song name. Using generic name.\033[0m")
     pointer_title = song_title.replace(':', '').replace(' ','')
     parts = xmlroot.find('part-list')
     for part in parts.findall('score-part'):
@@ -220,11 +220,13 @@ def parse_channel4(part, title):
 def main(argv):
     infile = ""
     outfile = ""
-    noiseless = False
-    speedoverride = False
     speed = 120
+    speedoverride = False
+    songname = "Music Song"
+    nameoverride = False
+    noiseless = False
     try:
-        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "tempo=", "noiseless"])
+        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "tempo=", "name=", "noiseless"])
     except getopt.GetoptError:
         print('muse2pokecrystal -i <musicxml> -o <music code>')
         sys.exit(2)
@@ -239,9 +241,12 @@ def main(argv):
         elif opt in ("--tempo"):
             speed = arg
             speedoverride = True
+        elif opt in ("--name"):
+            songname = arg
+            nameoverride = True
         elif opt in ("--noiseless"):
             noiseless = True
-    process_score(infile, outfile, noiseless, speedoverride, speed)
+    process_score(infile, outfile, noiseless, speedoverride, speed, songname, nameoverride)
 
 if __name__=="__main__":
     main(sys.argv[1:])

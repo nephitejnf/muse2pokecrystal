@@ -6,12 +6,13 @@ Alternatively, start up Musescore and create a new score. It's pretty simple, ju
 ### Channels
 The script is very strict about the order and quantity of the instruments. Three instruments are required with the drumset being optional.
 If you have a drumset, make sure it's at the bottom.
-I recommend picking channels 1 and 2 as square instruments, those are under the electronic instuments, because those are the first two channels on a Gameboy.
-The next, I recommend as a sine wave or saw wave channel for the third channel.
+While technically any instrument can be used for channels 1-3, it is _strongly_ recommended picking channels 1 and 2 as square instruments
+(under the electronic instuments) as those are the first two channels on a Gameboy.
+For channel 3, a sine wave or saw wave instrument is heavily advised.
 There is only one drumset under percussion for channel 4. It can be omited if you don't need it.
+Using anything other than a drumset will not work or work as expected.
 
 Instruments can be changed at any time in Musescore by pressing `i`.
-
 The template file is set up with the four recommended instruments by default.
 
 ### Writing your score
@@ -26,7 +27,7 @@ Alternatively, notes in a chord can be played sequentially in a channel if the c
 Tuplets are currently unsupported. They can be faked by alternating between lengths every other note.
 For example, ` 1/4 - 1/4 - 1/4` in a triplet could be `1/8 - 1/4 - 1/8`.
 
-Tied notes are supported. However, **any tie lasting longer than a whole note is wholly unsupported**.
+Tied notes are supported. However, **any tie lasting longer than a whole note is wholly unsupported at this time**.
 
 Notes must be no smaller than `1/16`.
 
@@ -49,7 +50,7 @@ Often times this process causes more problems than it's worth. Unless this is th
 
 #### Importing from Finale NotePad (*.mus)
 Some sites only offer downloads for `.mus` files, which can't be directly opened in Musescore. The file has to be opened in Finale NotePad
-and then exported to MusicXML within Finale. This method should also work for the trial version of Finale.
+and then exported to MusicXML within Finale. This method should also work for the trial version of Finale. This has not yet been tested.
 
 ### Saving your MusicXML
 You can save the project in Musescore's format, but I recommend just exporting as MusicXML from the file menu > export.

@@ -31,6 +31,12 @@ If you want to manually specify a tempo, use the `--tempo` parameter:
 muse2pokecrystal -i <musicxml> -o <asm> --tempo <bpm>
 ```
 
+If the script fails to detect the song name or you want to export it using a different name,
+use the `--name` parameter:
+```
+muse2pokecrystal -i <musicxml> -o <asm> --name "<Your Song Name>"
+```
+
 This can be run locally in your folder of placed in your binaries.
 It requires Python 3 to run (sorry Python 2 bois).
 
