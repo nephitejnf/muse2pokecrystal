@@ -101,22 +101,12 @@ def parity_check(musicfile, nonoise):
                 sys.exit(1)
     print("\n\033[94mParity check succeeded!")
 
-def noise_process(pitch):
+def note_process(pitch, channel):
     altered = pitch.find('alter')
-    step = pitch.find('display-step').text
-    if altered is not None: altered = altered.text
-    else: altered = '0'
-    nibble = '_'
-    if int(altered) < 0:
-        nibble = '#'
-        step = chr(ord(step)-1)
-    elif int(altered) > 0: nibble = '#'
-    noted = "{}{}".format(step, nibble)
-    return noted
-
-def note_process(pitch):
-    altered = pitch.find('alter')
-    step = pitch.find('step').text
+    if channel is 4:
+        step = pitch.find('display-step').text
+    else:
+        step = pitch.find('step').text
     if altered is not None: altered = altered.text
     else: altered = '0'
     nibble = '_'
@@ -152,36 +142,23 @@ def note_print(part, channel):
                     dura += int(note.find('duration').text)
                 elif note.find('./tie[@type="start"]') is not None:
                     tied = True
-                    if channel is not 4:
-                        step = note_process(pitch)
-                    else:
-                        step = noise_process(pitch)
+                    step = note_process(pitch, channel)
                     dura = int(note.find('duration').text)
                 elif note.find('./tie[@type="stop"]') is not None:
                     if int(note.find('duration').text) + dura > 16:
                         print("\n\033[91m\033[1mLength check failed!")
                         print("Note too long in Channel {}! Note length {}.\033[0m".format(channel, dura + int(note.find('duration').text)))
                         sys.exit(2)
-                    if channel is not 4:
-                        if step == note_process(pitch):
-                            t = "\tnote {}, {}\n".format(note_process(pitch),int(note.find('duration').text)+dura)
-                        else:
-                            asmfile.write("\tnote {}, {}\n".format(step,dura))
-                            t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
+                    if step == note_process(pitch, channel):
+                        t = "\tnote {}, {}\n".format(note_process(pitch, channel),int(note.find('duration').text)+dura)
                     else:
-                        if step == noise_process(pitch):
-                            t = "\tnote {}, {}\n".format(noise_process(pitch),int(note.find('duration').text)+dura)
-                        else:
-                            asmfile.write("\tnote {}, {}\n".format(step,dura))
-                            t = "\tnote {}, {}\n".format(noise_process(pitch),note.find('duration').text)
+                        asmfile.write("\tnote {}, {}\n".format(step,dura))
+                        t = "\tnote {}, {}\n".format(note_process(pitch, channel),note.find('duration').text)
                     tied = False
                     step = ''
                     dura = 0
                 else:
-                    if channel is not 4:
-                        t = "\tnote {}, {}\n".format(note_process(pitch),note.find('duration').text)
-                    else:
-                        t = "\tnote {}, {}\n".format(noise_process(pitch),note.find('duration').text)
+                    t = "\tnote {}, {}\n".format(note_process(pitch, channel),note.find('duration').text)
                 if t != None: asmfile.write(t)
 
 # tempo, volume, dutycycle, tone, vibrato, notetype, octave, stereopanning
