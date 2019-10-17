@@ -3,6 +3,7 @@
 from xml.etree.ElementTree import parse
 import xml.etree.ElementTree as et
 import sys, getopt
+from os.path import isfile as filehere
 
 asmfile = None
 # <part-list><score-part id=""><part-name>Name</partname></score-part></part-list>
@@ -246,7 +247,12 @@ def main(argv):
             nameoverride = True
         elif opt in ("--noiseless"):
             noiseless = True
-    process_score(infile, outfile, noiseless, speedoverride, speed, songname, nameoverride)
+    if filehere(outfile):
+        confirm = input("{} already exists!\nDo you want to continue and overwrite? [Y/n]: ".format(outfile))
+        if confirm in ["", 'y', 'Y']:
+            process_score(infile, outfile, noiseless, speedoverride, speed, songname, nameoverride)
+    else:
+        process_score(infile, outfile, noiseless, speedoverride, speed, songname, nameoverride)
 
 if __name__=="__main__":
     main(sys.argv[1:])
