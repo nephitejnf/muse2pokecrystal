@@ -186,7 +186,7 @@ def parse_channel1(part, title, manualtempo, tempo, conf):
         	asmfile.write("\ttempo {}\n".format(int(19200/int(part.find('./measure/direction/sound').get('tempo')))))
         except TypeError:
             print("\033[93mNo tempo was detected. Use try again with the --tempo parameter.")
-            print("\n\033[91m\033[1mConversion incomplete!"\033[0m)
+            print("\n\033[91m\033[1mConversion incomplete!\033[0m")
             sys.exit(2)
     else:
         asmfile.write("\ttempo {}\n".format(int(19200/int(tempo))))
