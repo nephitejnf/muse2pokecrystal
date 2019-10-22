@@ -67,7 +67,7 @@ def write_parts(xmlroot, pointer_title, manualtempo, tempo, conf, parts_list, no
 
     if not nonoise:
         print("Converting Channel 4: \033[95m{}\033[0m".format(parts_list[3][1]))
-        parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title, conf)\
+        parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title, conf)
 
 # checks the length of each channel to prevent desyncing
 def parity_check(musicfile, nonoise):
