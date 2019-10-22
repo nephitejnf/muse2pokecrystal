@@ -2,13 +2,15 @@
 
 from xml.etree.ElementTree import parse
 import xml.etree.ElementTree as et
+import configparser
 import sys, getopt
 from os.path import isfile as filehere
 
+customheader = configparser.ConfigParser()
 asmfile = None
 # <part-list><score-part id=""><part-name>Name</partname></score-part></part-list>
 # <part id=""><measure number="1"><notes /></measure></part>
-def process_score(xmlfile, musicfile, nonoise, manualtempo, tempo, song_title, provided_name):
+def process_score(xmlfile, musicfile, conf, nonoise, manualtempo, tempo, song_title, provided_name):
     global asmfile
     asmfile = open(musicfile, "w")
     # (part id, part-name)
@@ -39,26 +41,28 @@ def process_score(xmlfile, musicfile, nonoise, manualtempo, tempo, song_title, p
         asmfile.write("\tmusicheader 1, 4, Music_{}_Ch4\n".format(pointer_title))
     asmfile.write("\n\n")
 
+    if conf is not "":
+        customheader.read(conf)
     print("Converting Channel 1: \033[95m{}\033[0m".format(parts_list[0][1]))
-    parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title, manualtempo, tempo)
+    parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title, manualtempo, tempo, conf)
     print("Converting Channel 2: \033[95m{}\033[0m".format(parts_list[1][1]))
-    parse_channel2(xmlroot.find("./part[@id='{}']".format(parts_list[1][0])), pointer_title)
+    parse_channel2(xmlroot.find("./part[@id='{}']".format(parts_list[1][0])), pointer_title, conf)
     print("Converting Channel 3: \033[95m{}\033[0m".format(parts_list[2][1]))
-    parse_channel3(xmlroot.find("./part[@id='{}']".format(parts_list[2][0])), pointer_title)
+    parse_channel3(xmlroot.find("./part[@id='{}']".format(parts_list[2][0])), pointer_title, conf)
 
     if not nonoise:
         try:
             print("Converting Channel 4: \033[95m{}\033[0m".format(parts_list[3][1]))
-            parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title)
+            parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title, conf)
         except IndexError:
             print("\033[93mNo noise channel. Try running with the --noiseless parameter.")
-            print("\n\033[91m\033[1mConversion incomplete!")
+            print("\n\033[91m\033[1mConversion incomplete!\033[0m")
             sys.exit(2)
 
     # close
     asmfile.close()
     parity_check(musicfile, nonoise)
-    print("\033[92m\033[1mConversion success!")
+    print("\033[92m\033[1mConversion success!\033[0m")
 
 # checks the length of each channel to prevent desyncing
 def parity_check(musicfile, nonoise):
@@ -125,46 +129,54 @@ def note_print(part, channel):
     step = ''
     dura = 0
     for measure in part.findall('measure'):
-        for note in measure.findall('note'):
-            t = ""
-            if note.find('rest') is not None:
-                asmfile.write("\tnote __, {}\n".format(note.find('duration').text))
-            elif note.find('pitch') is None and note.find('unpitched') is None:
-                print('None?')
-            else:
-                if channel is not 4:
-                    pitch = note.find('pitch')
-                    if int(pitch.find('octave').text) is not curroctave:
-                        curroctave = int(pitch.find('octave').text)
-                        asmfile.write("\toctave {}\n".format(curroctave))
+        for command in measure:
+            if command.tag == "direction":
+                try:
+                    t = "\t{}\n".format(command.find('./direction-type/words').text)
+                    if t != None: asmfile.write(t)
+                except AttributeError:
+                    continue
+            if command.tag == "note":
+                note = command
+                t = ""
+                if note.find('rest') is not None:
+                    asmfile.write("\tnote __, {}\n".format(note.find('duration').text))
+                elif note.find('pitch') is None and note.find('unpitched') is None:
+                    print('None?')
                 else:
-                    pitch = note.find('unpitched')
-                if note.find('./tie[@type="start"]') is not None and note.find('./tie[@type="stop"]') is not None:
-                    dura += int(note.find('duration').text)
-                elif note.find('./tie[@type="start"]') is not None:
-                    tied = True
-                    step = note_process(pitch, channel)
-                    dura = int(note.find('duration').text)
-                elif note.find('./tie[@type="stop"]') is not None:
-                    if int(note.find('duration').text) + dura > 16:
-                        print("\n\033[91m\033[1mLength check failed!")
-                        print("Note too long in Channel {}! Note length {}.\033[0m".format(channel, dura + int(note.find('duration').text)))
-                        sys.exit(2)
-                    if step == note_process(pitch, channel):
-                        t = "\tnote {}, {}\n".format(note_process(pitch, channel),int(note.find('duration').text)+dura)
+                    if channel is not 4:
+                        pitch = note.find('pitch')
+                        if int(pitch.find('octave').text) is not curroctave:
+                            curroctave = int(pitch.find('octave').text)
+                            asmfile.write("\toctave {}\n".format(curroctave))
                     else:
-                        asmfile.write("\tnote {}, {}\n".format(step,dura))
+                        pitch = note.find('unpitched')
+                    if note.find('./tie[@type="start"]') is not None and note.find('./tie[@type="stop"]') is not None:
+                        dura += int(note.find('duration').text)
+                    elif note.find('./tie[@type="start"]') is not None:
+                        tied = True
+                        step = note_process(pitch, channel)
+                        dura = int(note.find('duration').text)
+                    elif note.find('./tie[@type="stop"]') is not None:
+                        if int(note.find('duration').text) + dura > 16:
+                            print("\n\033[91m\033[1mLength check failed!")
+                            print("Note too long in Channel {}! Note length {}.\033[0m".format(channel, dura + int(note.find('duration').text)))
+                            sys.exit(2)
+                        if step == note_process(pitch, channel):
+                            t = "\tnote {}, {}\n".format(note_process(pitch, channel),int(note.find('duration').text)+dura)
+                        else:
+                            asmfile.write("\tnote {}, {}\n".format(step,dura))
+                            t = "\tnote {}, {}\n".format(note_process(pitch, channel),note.find('duration').text)
+                        tied = False
+                        step = ''
+                        dura = 0
+                    else:
                         t = "\tnote {}, {}\n".format(note_process(pitch, channel),note.find('duration').text)
-                    tied = False
-                    step = ''
-                    dura = 0
-                else:
-                    t = "\tnote {}, {}\n".format(note_process(pitch, channel),note.find('duration').text)
-                if t != None: asmfile.write(t)
+                    if t != None: asmfile.write(t)
 
 # tempo, volume, dutycycle, tone, vibrato, notetype, octave, stereopanning
 # <tie type="start" (type="stop")/>
-def parse_channel1(part, title, manualtempo, tempo):
+def parse_channel1(part, title, manualtempo, tempo, conf):
     global asmfile
     # write channel header including tempo
     asmfile.write("Music_{}_Ch1:\n".format(title))
@@ -174,60 +186,90 @@ def parse_channel1(part, title, manualtempo, tempo):
         	asmfile.write("\ttempo {}\n".format(int(19200/int(part.find('./measure/direction/sound').get('tempo')))))
         except TypeError:
             print("\033[93mNo tempo was detected. Use try again with the --tempo parameter.")
-            print("\n\033[91m\033[1mConversion incomplete!")
+            print("\n\033[91m\033[1mConversion incomplete!"\033[0m)
             sys.exit(2)
     else:
         asmfile.write("\ttempo {}\n".format(int(19200/int(tempo))))
-    asmfile.write("\tvolume $77\n")
-    asmfile.write("\tnotetype $c, $95\n")
-    asmfile.write("\tdutycycle $2\n")
+    if conf is "":
+        asmfile.write("\tvolume $77\n")
+        asmfile.write("\tnotetype $c, $95\n")
+        asmfile.write("\tdutycycle $2\n")
+    else:
+        read_custom_header(1)
     asmfile.write("Music_{}_Ch1_Loop:\n".format(title))
     note_print(part, 1)
     asmfile.write("\tloopchannel 0, Music_{}_Ch1_Loop\n\n\n".format(title))
 
 # dutycycle, tone, vibrato, notetype, octave, stereopanning
-def parse_channel2(part, title):
+def parse_channel2(part, title, conf):
     global asmfile
     # write channel header
     asmfile.write("Music_{}_Ch2:\n".format(title))
-    asmfile.write("\tvolume $77\n")
-    asmfile.write("\tnotetype $c, $95\n")
-    asmfile.write("\tdutycycle $2\n")
+    if conf is "":
+        asmfile.write("\tnotetype $c, $95\n")
+        asmfile.write("\tdutycycle $2\n")
+    else:
+        read_custom_header(2)
     asmfile.write("Music_{}_Ch2_Loop:\n".format(title))
     note_print(part, 2)
     asmfile.write("\tloopchannel 0, Music_{}_Ch2_Loop\n\n\n".format(title))
 
 # stereopanning, vibrato, notetype, tone, octave
-def parse_channel3(part, title):
+def parse_channel3(part, title, conf):
     global asmfile
     # write channel header
     asmfile.write("Music_{}_Ch3:\n".format(title))
-    asmfile.write("\tnotetype $c, $15\n")
+    if conf is "":
+        asmfile.write("\tnotetype $c, $15\n")
+    else:
+        read_custom_header(3)
     asmfile.write("Music_{}_Ch3_Loop:\n".format(title))
     note_print(part, 3)
     asmfile.write("\tloopchannel 0, Music_{}_Ch3_Loop\n\n\n".format(title))
 
 # notetype, togglenoise
-def parse_channel4(part, title):
+def parse_channel4(part, title, conf):
     global asmfile
     # write channel header
     asmfile.write("Music_{}_Ch4:\n".format(title))
-    asmfile.write("\tnotetype $c\n")
-    asmfile.write("\ttogglenoise 1\n")
+    if conf is "":
+        asmfile.write("\tnotetype $c\n")
+        asmfile.write("\ttogglenoise 1\n")
+    else:
+        read_custom_header(4)
     asmfile.write("Music_{}_Ch4_Loop:\n".format(title))
     note_print(part, 4)
     asmfile.write("\tloopchannel 0, Music_{}_Ch4_Loop\n\n\n".format(title))
 
+def read_custom_header(channel):
+    chan = customheader['Channel{}'.format(channel)]
+    if channel != 4:
+        if channel == 1:
+            asmfile.write("\tvolume {}\n".format(chan['volume']))
+        asmfile.write("\tnotetype {}, {}\n".format(chan['notetype'], chan['intensity']))
+        if channel != 3:
+            asmfile.write("\tdutycycle {}\n".format(chan['dutycycle']))
+        if chan['tone'] != "no":
+            asmfile.write("\ttone {}\n".format(chan['tone']))
+        if chan['vibrato'] != "no":
+            asmfile.write("\tvibrato {}, {}\n".format(chan['vibrato_delay'], chan['vibrato_extent']))
+    if channel == 4:
+        asmfile.write("\tnotetype {}\n".format(chan['notetype']))
+        asmfile.write("\ttogglenoise {}\n".format(chan['togglenoise']))
+    if chan['stereopanning'] != "$ff":
+        asmfile.write("\tstereopanning {}\n".format(chan['stereopanning']))
+
 def main(argv):
     infile = ""
     outfile = ""
+    configfile = ""
     speed = 120
     speedoverride = False
     songname = "Music Song"
     nameoverride = False
     noiseless = False
     try:
-        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "tempo=", "name=", "noiseless"])
+        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "config=", "tempo=", "name=", "noiseless"])
     except getopt.GetoptError:
         print('muse2pokecrystal -i <musicxml> -o <music code>')
         sys.exit(2)
@@ -239,6 +281,8 @@ def main(argv):
             infile = arg
         elif opt in ("-o", "--code"):
             outfile = arg
+        elif opt in ("--config"):
+            configfile = arg
         elif opt in ("--tempo"):
             speed = arg
             speedoverride = True
@@ -250,9 +294,9 @@ def main(argv):
     if filehere(outfile):
         confirm = input("{} already exists!\nDo you want to continue and overwrite? [Y/n]: ".format(outfile))
         if confirm in ["", 'y', 'Y']:
-            process_score(infile, outfile, noiseless, speedoverride, speed, songname, nameoverride)
+            process_score(infile, outfile, configfile, noiseless, speedoverride, speed, songname, nameoverride)
     else:
-        process_score(infile, outfile, noiseless, speedoverride, speed, songname, nameoverride)
+        process_score(infile, outfile, configfile, noiseless, speedoverride, speed, songname, nameoverride)
 
 if __name__=="__main__":
     main(sys.argv[1:])
