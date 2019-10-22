@@ -27,6 +27,21 @@ def process_score(xmlfile, musicfile, conf, nonoise, manualtempo, tempo, song_ti
     parts = xmlroot.find('part-list')
     for part in parts.findall('score-part'):
         parts_list.append((part.get('id'), part.find('part-name').text))
+    try:
+        write_parts(xmlroot, pointer_title, manualtempo, tempo, conf, parts_list, nonoise)
+    except IndexError:
+        print("\033[93mNo noise channel. Reprocessing without noise channel...")
+        nonoise = True
+        asmfile.seek(0)
+        asmfile.truncate(0)
+        write_parts(xmlroot, pointer_title, manualtempo, tempo, conf, parts_list, nonoise)
+
+    # close
+    asmfile.close()
+    parity_check(musicfile, nonoise)
+    print("\033[92m\033[1mConversion success!\033[0m")
+
+def write_parts(xmlroot, pointer_title, manualtempo, tempo, conf, parts_list, nonoise):
 
     # the --noiseless parameter tells us whether we should ignore channel 4
     print("\033[93mAdding Header Info\033[0m")
@@ -51,18 +66,8 @@ def process_score(xmlfile, musicfile, conf, nonoise, manualtempo, tempo, song_ti
     parse_channel3(xmlroot.find("./part[@id='{}']".format(parts_list[2][0])), pointer_title, conf)
 
     if not nonoise:
-        try:
-            print("Converting Channel 4: \033[95m{}\033[0m".format(parts_list[3][1]))
-            parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title, conf)
-        except IndexError:
-            print("\033[93mNo noise channel. Try running with the --noiseless parameter.")
-            print("\n\033[91m\033[1mConversion incomplete!\033[0m")
-            sys.exit(2)
-
-    # close
-    asmfile.close()
-    parity_check(musicfile, nonoise)
-    print("\033[92m\033[1mConversion success!\033[0m")
+        print("Converting Channel 4: \033[95m{}\033[0m".format(parts_list[3][1]))
+        parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title, conf)\
 
 # checks the length of each channel to prevent desyncing
 def parity_check(musicfile, nonoise):
@@ -268,8 +273,9 @@ def main(argv):
     songname = "Music Song"
     nameoverride = False
     noiseless = False
+    forceoverwrite = False
     try:
-        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "config=", "tempo=", "name=", "noiseless"])
+        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "config=", "tempo=", "name=", "noiseless", "overwrite"])
     except getopt.GetoptError:
         print('muse2pokecrystal -i <musicxml> -o <music code>')
         sys.exit(2)
@@ -291,7 +297,9 @@ def main(argv):
             nameoverride = True
         elif opt in ("--noiseless"):
             noiseless = True
-    if filehere(outfile):
+        elif opt in ("--overwrite"):
+            forceoverwrite = True
+    if filehere(outfile) and forceoverwrite is False:
         confirm = input("{} already exists!\nDo you want to continue and overwrite? [Y/n]: ".format(outfile))
         if confirm in ["", 'y', 'Y']:
             process_score(infile, outfile, configfile, noiseless, speedoverride, speed, songname, nameoverride)
