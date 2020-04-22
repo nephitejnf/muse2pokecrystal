@@ -114,7 +114,7 @@ def parity_check(musicfile, nonoise):
     print("\n\033[94mParity check succeeded!")
 
 def note_process(pitch, channel):
-    bad_notes = {'E#': 'F_', 'B#': 'C_', 'Ab': 'G#', 'Gb': 'F#', 'Eb': 'D#', 'Db': 'C#', 'Bb': 'A#'}
+    bad_notes = {'E#': 'F_', 'B#': 'C_', 'Ab': 'G#', 'Gb': 'F#', 'Eb': 'D#', 'Db': 'C#', 'Bb': 'A#', 'Cb': 'B_'}
     altered = pitch.find('alter')
     if channel == 4:
         step = pitch.find('display-step').text
@@ -239,7 +239,7 @@ def release_command_queue():
     sorted_queue.clear()
     sorted_post_queue.clear()
     output_queue.clear()
-    
+
 
 # tempo, volume, dutycycle, tone, vibrato, notetype, octave, stereopanning
 # <tie type="start" (type="stop")/>
