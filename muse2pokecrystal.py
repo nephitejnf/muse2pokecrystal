@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
 from xml.etree.ElementTree import parse
-import xml.etree.ElementTree as et
 import configparser
-import sys, getopt
+import sys
+import getopt
 from os.path import isfile as filehere
+from src import text
 
 customheader = configparser.ConfigParser()
 asmfile = None
@@ -92,8 +93,7 @@ def parity_check(musicfile, nonoise):
     if nonoise:
         for channelcnt in channelcntarray[:3]:
             if channelcnt != channelcntarray[0]:
-                print("\n\033[91m\033[1mParity check failed!")
-                print("Check that there is only one note per channel!\033[0m")
+                print(text.TerminalText.parity_check_failed)
                 for item in channelcntarray[:3]:
                     if channelcnt == item:
                         print("\033[91m\033[1m" + str(item) + "\033[0m")
@@ -103,8 +103,7 @@ def parity_check(musicfile, nonoise):
     else:
         for channelcnt in channelcntarray:
             if channelcnt != channelcntarray[0]:
-                print("\n\033[91m\033[1mParity check failed!")
-                print("Check that there is only one note per channel!\033[0m")
+                print(text.TerminalText.parity_check_failed)
                 for item in channelcntarray:
                     if channelcnt == item:
                         print("\033[91m\033[1m" + str(item) + "\033[0m")
@@ -159,9 +158,8 @@ def note_print(part, channel):
                         command_array = command_text[1:].split(' ', 1)
                         if command_array[1] == 'loop':
                             if customloop == False:
-                                print("\033[93mA user defined loop was found; however, the --custom-loop parameter was not toggled.")
-                                print("Try again with the --custom-loop parameter.")
-                                print("\n\033[91m\033[1mConversion incomplete!\033[0m")
+                                print(text.TerminalText.custom_loop_error,
+                                      text.TerminalText.conversion_incomplete)
                                 sys.exit(2)
                             command_array[1] = "Music_{}_Ch{}_Loop:\n".format(pointer_title, channel)
                         priority_command_queue.append(command_array)
@@ -220,10 +218,10 @@ def release_command_queue():
     sorted_post_queue = []
     output_queue = []
     for command_set in priority_command_queue:
-            if int(command_set[0]) > -1:
-                sorted_queue.insert(int(command_set[0]), command_set[1])
-            else:
-                sorted_post_queue.insert(int(command_set[0]), command_set[1])
+        if int(command_set[0]) > -1:
+            sorted_queue.insert(int(command_set[0]), command_set[1])
+        else:
+            sorted_post_queue.insert(int(command_set[0]), command_set[1])
     # join all the lists
     output_queue.extend(sorted_queue)
     output_queue.extend(async_command_queue)
@@ -250,10 +248,10 @@ def parse_channel1(part, title, manualtempo, tempo, conf, loop):
     # Try to auto detect tempo, or get it from the user
     if not manualtempo:
         try:
-        	asmfile.write("\ttempo {}\n".format(int(19200/int(round(float(part.find('./measure/direction/sound').get('tempo')))))))
-        except TypeError:
-            print("\033[93mNo tempo was detected. Try again with the --tempo parameter.")
-            print("\n\033[91m\033[1mConversion incomplete!\033[0m")
+            asmfile.write("\ttempo {}\n".format(int(19200/int(round(float(part.find('./measure/direction/sound').get('tempo')))))))
+        except TypeError or AttributeError:
+            print(text.TerminalText.no_tempo_error,
+                  text.TerminalText.conversion_incomplete)
             sys.exit(2)
     else:
         asmfile.write("\ttempo {}\n".format(int(19200/int(tempo))))
@@ -338,6 +336,7 @@ def read_custom_header(channel):
     if chan['stereopanning'] != "$ff":
         asmfile.write("\tstereopanning {}\n".format(chan['stereopanning']))
 
+
 def main(argv):
     global customloop
     infile = ""
@@ -351,13 +350,17 @@ def main(argv):
     forceoverwrite = False
     customloop = False
     try:
-        opts, args = getopt.getopt(argv,"hi:o:",["score=","code=", "config=", "tempo=", "name=", "noiseless", "overwrite", "custom-loop"])
+        opts, args = getopt.getopt(argv,"hi:o:",["score=", "code=", "config=", "tempo=", "name=", "noiseless", "overwrite", "custom-loop"])
     except getopt.GetoptError:
-        print('muse2pokecrystal -i <musicxml> -o <music code>')
+        print(text.TerminalText.help, text.TerminalText.more_help)
+        sys.exit(2)
+    if len(argv) == 0:
+        print(text.TerminalText.help, text.TerminalText.more_help)
         sys.exit(2)
     for opt, arg in opts:
-        if opt == '-h':
-            print('muse2pokecrystal -i <musicxml> -o <music code>')
+        if opt in ('-h', '--help'):
+            print(text.TerminalText.help,
+                  text.TerminalText.extended_help)
             sys.exit()
         elif opt in ("-i", "--score"):
             infile = arg
@@ -378,8 +381,8 @@ def main(argv):
         elif opt in ("--custom-loop"):
             customloop = True
     if filehere(outfile) and forceoverwrite is False:
-        confirm = input("{} already exists!\nDo you want to continue and overwrite? [Y/n]: ".format(outfile))
-        if confirm in ["", 'y', 'Y']:
+        confirm = input(outfile + text.TerminalText.overwrite_prompt)
+        if confirm in ['y', 'Y']:
             process_score(infile, outfile, configfile, noiseless, speedoverride, speed, songname, nameoverride, customloop)
     else:
         process_score(infile, outfile, configfile, noiseless, speedoverride, speed, songname, nameoverride, customloop)
