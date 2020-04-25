@@ -6,8 +6,8 @@
     </work>
   <identification>
     <encoding>
-      <software>MuseScore 3.2.3</software>
-      <encoding-date>2019-09-14</encoding-date>
+      <software>MuseScore 3.4.2</software>
+      <encoding-date>2020-04-25</encoding-date>
       <supports element="accidental" type="yes"/>
       <supports element="beam" type="yes"/>
       <supports element="print" attribute="new-page" type="yes" value="yes"/>
@@ -40,7 +40,7 @@
     <lyric-font font-family="FreeSerif" font-size="11"/>
     </defaults>
   <credit page="1">
-    <credit-words default-x="595.275" default-y="1627.01" justify="center" valign="top" font-size="24">GB Template</credit-words>
+    <credit-words default-x="595.275" default-y="1627.09" justify="center" valign="top" font-size="24">GB Template</credit-words>
     </credit>
   <part-list>
     <part-group type="start" number="1">
@@ -120,7 +120,7 @@
             <left-margin>212.60</left-margin>
             <right-margin>-0.00</right-margin>
             </system-margins>
-          <top-system-distance>121.90</top-system-distance>
+          <top-system-distance>170.00</top-system-distance>
           </system-layout>
         </print>
       <attributes>
@@ -137,6 +137,15 @@
           <line>2</line>
           </clef>
         </attributes>
+      <direction placement="above">
+        <direction-type>
+          <metronome parentheses="no" default-x="-35.96" relative-y="20.00">
+            <beat-unit>quarter</beat-unit>
+            <per-minute>120</per-minute>
+            </metronome>
+          </direction-type>
+        <sound tempo="120"/>
+        </direction>
       <note>
         <rest/>
         <duration>4</duration>
