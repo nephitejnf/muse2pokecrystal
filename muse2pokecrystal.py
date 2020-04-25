@@ -9,6 +9,7 @@ from src import text
 
 customheader = configparser.ConfigParser()
 asmfile = None
+TERM_TEXT = text.TerminalText(True)
 
 # <part-list><score-part id=""><part-name>Name</partname></score-part></part-list>
 # <part id=""><measure number="1"><notes /></measure></part>
@@ -24,7 +25,7 @@ def process_score(xmlfile, musicfile, conf, nonoise, manualtempo, tempo, song_ti
         try:
             song_title = xmlroot.find('./work/work-title').text
         except AttributeError:
-            print("\033[93mCould not guess song name. Using generic name.\033[0m")
+            print(TERM_TEXT.generic_name)
     global pointer_title
     pointer_title = song_title.replace(':', '').replace(' ','')
     parts = xmlroot.find('part-list')
@@ -33,7 +34,7 @@ def process_score(xmlfile, musicfile, conf, nonoise, manualtempo, tempo, song_ti
     try:
         write_parts(xmlroot, pointer_title, manualtempo, tempo, conf, parts_list, nonoise, specialloop)
     except IndexError:
-        print("\033[93mNo noise channel. Reprocessing without noise channel...")
+        print(TERM_TEXT.no_noise_channel)
         nonoise = True
         asmfile.seek(0)
         asmfile.truncate(0)
@@ -42,34 +43,32 @@ def process_score(xmlfile, musicfile, conf, nonoise, manualtempo, tempo, song_ti
     # close
     asmfile.close()
     parity_check(musicfile, nonoise)
-    print("\033[92m\033[1mConversion success!\033[0m")
+    print(TERM_TEXT.conversion_success)
 
 def write_parts(xmlroot, pointer_title, manualtempo, tempo, conf, parts_list, nonoise, specialloop):
 
     # the --noiseless parameter tells us whether we should ignore channel 4
-    print("\033[93mAdding Header Info\033[0m")
-    asmfile.write("Music_{}:\n".format(pointer_title))
-    if nonoise:
-        asmfile.write("\tmusicheader 3, 1, Music_{}_Ch1\n".format(pointer_title))
-    else:
-        asmfile.write("\tmusicheader 4, 1, Music_{}_Ch1\n".format(pointer_title))
-    asmfile.write("\tmusicheader 1, 2, Music_{}_Ch2\n".format(pointer_title))
-    asmfile.write("\tmusicheader 1, 3, Music_{}_Ch3\n".format(pointer_title))
+    file_text = text.OutputText(pointer_title)
+    print(TERM_TEXT.adding_header)
+    asmfile.write(file_text.music_label())
+    asmfile.write(file_text.music_header_1(nonoise))
+    asmfile.write(file_text.music_header_234(2))
+    asmfile.write(file_text.music_header_234(3))
     if not nonoise:
-        asmfile.write("\tmusicheader 1, 4, Music_{}_Ch4\n".format(pointer_title))
+        asmfile.write(file_text.music_header_234(4))
     asmfile.write("\n\n")
 
     if conf != "":
         customheader.read(conf)
-    print("Converting Channel 1: \033[95m{}\033[0m".format(parts_list[0][1]))
+    print(TERM_TEXT.converting_channel(1, parts_list))
     parse_channel1(xmlroot.find("./part[@id='{}']".format(parts_list[0][0])), pointer_title, manualtempo, tempo, conf, specialloop)
-    print("Converting Channel 2: \033[95m{}\033[0m".format(parts_list[1][1]))
+    print(TERM_TEXT.converting_channel(2, parts_list))
     parse_channel2(xmlroot.find("./part[@id='{}']".format(parts_list[1][0])), pointer_title, conf, specialloop)
-    print("Converting Channel 3: \033[95m{}\033[0m".format(parts_list[2][1]))
+    print(TERM_TEXT.converting_channel(3, parts_list))
     parse_channel3(xmlroot.find("./part[@id='{}']".format(parts_list[2][0])), pointer_title, conf, specialloop)
 
     if not nonoise:
-        print("Converting Channel 4: \033[95m{}\033[0m".format(parts_list[3][1]))
+        print(TERM_TEXT.converting_channel(4, parts_list))
         parse_channel4(xmlroot.find("./part[@id='{}']".format(parts_list[3][0])), pointer_title, conf, specialloop)
 
 # checks the length of each channel to prevent desyncing
@@ -87,13 +86,13 @@ def parity_check(musicfile, nonoise):
             curchannel = 3
         if "_Ch4_Loop" in line:
             curchannel = 4
-        elif "note" in line and not "type" in line:
+        elif "note" in line and "type" not in line:
             channelcntarray[curchannel - 1] += int(line[9:])
     curchannel = 0
     if nonoise:
         for channelcnt in channelcntarray[:3]:
             if channelcnt != channelcntarray[0]:
-                print(text.TerminalText.parity_check_failed)
+                print(TERM_TEXT.parity_check_failed)
                 for item in channelcntarray[:3]:
                     if channelcnt == item:
                         print("\033[91m\033[1m" + str(item) + "\033[0m")
@@ -103,17 +102,24 @@ def parity_check(musicfile, nonoise):
     else:
         for channelcnt in channelcntarray:
             if channelcnt != channelcntarray[0]:
-                print(text.TerminalText.parity_check_failed)
+                print(TERM_TEXT.parity_check_failed)
                 for item in channelcntarray:
                     if channelcnt == item:
                         print("\033[91m\033[1m" + str(item) + "\033[0m")
                     else:
                         print("\033[93m" + str(item) + "\033[0m")
                 sys.exit(1)
-    print("\n\033[94mParity check succeeded!")
+    print(TERM_TEXT.parity_check_succeeded)
 
 def note_process(pitch, channel):
-    bad_notes = {'E#': 'F_', 'B#': 'C_', 'Ab': 'G#', 'Gb': 'F#', 'Eb': 'D#', 'Db': 'C#', 'Bb': 'A#', 'Cb': 'B_'}
+    bad_notes = {'E#': 'F_',
+                 'B#': 'C_',
+                 'Ab': 'G#',
+                 'Gb': 'F#',
+                 'Eb': 'D#',
+                 'Db': 'C#',
+                 'Bb': 'A#',
+                 'Cb': 'B_'}
     altered = pitch.find('alter')
     if channel == 4:
         step = pitch.find('display-step').text
@@ -147,19 +153,19 @@ def note_print(part, channel):
             if command.tag == "direction":
                 try:
                     command_text = command.find('./direction-type/words').text
-                    '''
+                    """
                     The "@" is used to indicate a command's priority.
                     For example, to make sure a loop takes precedence over all other commands,
                     you would write "@0 loop" because 0 is the highest priority.
                     Negative values make sure the command the command is run last,
                     including after commands with no priority attached.
-                    '''
+                    """
                     if '@' in command_text:
                         command_array = command_text[1:].split(' ', 1)
                         if command_array[1] == 'loop':
                             if customloop == False:
-                                print(text.TerminalText.custom_loop_error,
-                                      text.TerminalText.conversion_incomplete)
+                                print(TERM_TEXT.custom_loop_error,
+                                      TERM_TEXT.conversion_incomplete)
                                 sys.exit(2)
                             command_array[1] = "Music_{}_Ch{}_Loop:\n".format(pointer_title, channel)
                         priority_command_queue.append(command_array)
@@ -250,8 +256,8 @@ def parse_channel1(part, title, manualtempo, tempo, conf, loop):
         try:
             asmfile.write("\ttempo {}\n".format(int(19200/int(round(float(part.find('./measure/direction/sound').get('tempo')))))))
         except TypeError or AttributeError:
-            print(text.TerminalText.no_tempo_error,
-                  text.TerminalText.conversion_incomplete)
+            print(TERM_TEXT.no_tempo_error,
+                  TERM_TEXT.conversion_incomplete)
             sys.exit(2)
     else:
         asmfile.write("\ttempo {}\n".format(int(19200/int(tempo))))
@@ -352,15 +358,15 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:o:",["score=", "code=", "config=", "tempo=", "name=", "noiseless", "overwrite", "custom-loop"])
     except getopt.GetoptError:
-        print(text.TerminalText.help, text.TerminalText.more_help)
+        print(TERM_TEXT.help, TERM_TEXT.more_help)
         sys.exit(2)
     if len(argv) == 0:
-        print(text.TerminalText.help, text.TerminalText.more_help)
+        print(TERM_TEXT.help, TERM_TEXT.more_help)
         sys.exit(2)
     for opt, arg in opts:
         if opt in ('-h', '--help'):
-            print(text.TerminalText.help,
-                  text.TerminalText.extended_help)
+            print(TERM_TEXT.help,
+                  TERM_TEXT.extended_help)
             sys.exit()
         elif opt in ("-i", "--score"):
             infile = arg
@@ -381,7 +387,7 @@ def main(argv):
         elif opt in ("--custom-loop"):
             customloop = True
     if filehere(outfile) and forceoverwrite is False:
-        confirm = input(outfile + text.TerminalText.overwrite_prompt)
+        confirm = input(outfile + TERM_TEXT.overwrite_prompt)
         if confirm in ['y', 'Y']:
             process_score(infile, outfile, configfile, noiseless, speedoverride, speed, songname, nameoverride, customloop)
     else:
