@@ -54,8 +54,8 @@ def main():
                                  args.asm,
                                  args.config,
                                  args.noiseless,
-                                 args.tempo,
                                  speed,
+                                 args.tempo,
                                  args.name,
                                  nameoverride,
                                  args.custom_loop)
@@ -64,8 +64,8 @@ def main():
                              args.asm,
                              args.config,
                              args.noiseless,
-                             args.tempo,
                              speed,
+                             args.tempo,
                              args.name,
                              nameoverride,
                              args.custom_loop)
