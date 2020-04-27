@@ -358,13 +358,17 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:o:",["score=", "code=", "config=", "tempo=", "name=", "noiseless", "overwrite", "custom-loop"])
     except getopt.GetoptError:
-        print(TERM_TEXT.help, TERM_TEXT.more_help)
+        print(TERM_TEXT.help,
+              TERM_TEXT.description_help,
+              TERM_TEXT.more_help)
         sys.exit(2)
     if len(argv) == 0:
-        print(TERM_TEXT.help, TERM_TEXT.more_help)
+        print(TERM_TEXT.help,
+              TERM_TEXT.description_help,
+              TERM_TEXT.more_help)
         sys.exit(2)
     for opt, arg in opts:
-        if opt in ('-h', '--help'):
+        if opt =='-h' or opt == '--help':
             print(TERM_TEXT.help,
                   TERM_TEXT.extended_help)
             sys.exit()
@@ -393,5 +397,5 @@ def main(argv):
     else:
         process_score(infile, outfile, configfile, noiseless, speedoverride, speed, songname, nameoverride, customloop)
 
-if __name__=="__main__":
+if __name__== "__main__":
     main(sys.argv[1:])

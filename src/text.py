@@ -51,7 +51,7 @@ class TerminalText():
     Text that gets output to the terminal.
 
     All the text that stays constant are in one method.
-    Text the more reusable pieces of text are methods.
+    The more reusable pieces of text are methods.
     The text methods should always return strings, not print them.
 
     """
@@ -60,6 +60,7 @@ class TerminalText():
         """Toggle colored terminal text."""
         self.colored = colored_output
         self.set_constant_text()
+        self.set_legacy_constant_text()
 
     def converting_channel(self, channel, instrument_list):
         """Format and return channel conversion text."""
@@ -72,38 +73,6 @@ class TerminalText():
 
     def set_constant_text(self):
         """Set all the constant text."""
-        self.help = ('Usage: muse2pokecrystal '
-                     '-i [MUSICXML] -o [ASM]... [OPTION]...\n')
-
-        self.more_help = 'Try \'muse2pokecrystal -h\' for more information.'
-
-        self.extended_help = ('Convert MusicXML sheet music'
-                              ' into a script that\'s'
-                              ' compatible with Pokémon Crystal\'s'
-                              ' audio engine.\n'
-                              'Example: muse2pokecrystal'
-                              ' -i song.musicxml -o song.asm\n\n'
-                              'Mandatory options:\n'
-                              '  -i, --score=MUSICXML    input MusicXML\n'
-                              '  -o, --code=ASM          output asm\n\n'
-                              'Additional options:\n'
-                              '      --config=CONFIG     '
-                              'read commands from a configuration file\n'
-                              '      --tempo=TEMPO       '
-                              'override the tempo in the score\n'
-                              '      --name=NAME         '
-                              'specify the song\'s name\n'
-                              '      --noiseless         '
-                              'don\'t process the noise channel\n'
-                              '      --overwrite         '
-                              'force overwrite if the output file exists\n'
-                              '      --custom-loop       '
-                              'detect user defined loops\n\n'
-                              'Found a bug? Open an issue on Github!\n'
-                              'Repository: '
-                              'https://github.com/nephitejnf'
-                              '/muse2pokecrystal\n')
-
         self.custom_loop_error = (Color(self.colored).warning +
                                   'A user defined loop was found; however, ' +
                                   'the --custom-loop parameter' +
@@ -152,6 +121,67 @@ class TerminalText():
         self.adding_header = (Color(self.colored).info +
                               'Adding Header Info' +
                               Color(self.colored).end)
+
+        self.prog_description = ('Convert MusicXML sheet music'
+                                 ' into a script that\'s'
+                                 ' compatible with Pokémon Crystal\'s'
+                                 ' audio engine.\n')
+
+        self.arg_musicxml_desc = 'input MusicXML file'
+
+        self.arg_asm_desc = 'output music script'
+
+        self.arg_config_desc = 'read commands from a configuration file'
+
+        self.arg_tempo_desc = 'override song with specified tempo in BPM'
+
+        self.arg_name_desc = 'specify the song name'
+
+        self.arg_noiseless_desc = 'don\'t process the noise channel, if any'
+
+        self.arg_overwrite_desc = 'overwrite output file without prompting'
+
+        self.arg_custom_loop_desc = 'process user defined loops'
+
+        self.arg_colored_output_desc = 'color code terminal output'
+
+        self.version = 'Muse2pokecrystal Git Development Version'
+
+    def set_legacy_constant_text(self):
+        """Depreciated text."""
+        self.help = ('Usage: muse2pokecrystal '
+                     '-i [MUSICXML] -o [ASM]... [OPTION]...\n')
+
+        self.more_help = 'Try \'muse2pokecrystal -h\' for more information.'
+
+        self.description_help = ('Convert MusicXML sheet music'
+                                 ' into a script that\'s'
+                                 ' compatible with Pokémon Crystal\'s'
+                                 ' audio engine.\n')
+
+        self.extended_help = ('Example: muse2pokecrystal'
+                              ' -i song.musicxml -o song.asm\n\n'
+                              'Mandatory options:\n'
+                              '  -i, --score=MUSICXML    input MusicXML\n'
+                              '  -o, --code=ASM          output asm\n\n'
+                              'Additional options:\n'
+                              '      --config=CONFIG     '
+                              'read commands from a configuration file\n'
+                              '      --tempo=TEMPO       '
+                              'override the tempo in the score\n'
+                              '      --name=NAME         '
+                              'specify the song\'s name\n'
+                              '      --noiseless         '
+                              'don\'t process the noise channel\n'
+                              '      --overwrite         '
+                              'force overwrite if the output file exists\n'
+                              '      --custom-loop       '
+                              'detect user defined loops\n\n'
+                              'Found a bug? Open an issue on Github!\n'
+                              'Repository: '
+                              'https://github.com/nephitejnf'
+                              '/muse2pokecrystal\n')
+
 
 
 class OutputText():
