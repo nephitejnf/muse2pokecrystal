@@ -192,9 +192,9 @@ class OutputText():
 
     """
 
-    def __init__(self, name):
+    def __init__(self, pointer_name):
         """Set variables used across methods."""
-        self.music_title = name
+        self.music_title = pointer_name
 
     def music_label(self):
         """Return the music label."""
