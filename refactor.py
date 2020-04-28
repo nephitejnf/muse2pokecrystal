@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 import argparse
 from os.path import isfile as filehere
-from src import text
+from src import text, parse
 import muse2pokecrystal as legacy
 
 TERM_TEXT = text.TerminalText(False)
-TERM_TEXT_COLORED = text.TerminalText(True)
 
 
 def main():
@@ -34,22 +33,41 @@ def main():
     parser.add_argument('-C', '--colored-output',
                         action='store_true',
                         help=TERM_TEXT.arg_colored_output_desc)
+    parser.add_argument('-d', '--depreciated', action='store_true')
     parser.add_argument('-v', '--version', action='version',
                         version=TERM_TEXT.version)
     args = parser.parse_args()
-    if args.tempo is None:
-        speed = False
-    else:
-        speed = True
-    if args.name is None:
-        nameoverride = False
-    else:
-        nameoverride = True
-    if args.config is None:
-        args.config = ''
+    # Legacy compat, DELETE ASAP!
+    if args.depreciated:
+        if args.tempo is None:
+            speed = False
+        else:
+            speed = True
+        if args.name is None:
+            nameoverride = False
+        else:
+            nameoverride = True
+        if args.config is None:
+            args.config = ''
+    # Legacy compat, DELETE ASAP!
     if filehere(args.asm) and args.overwrite is False:
-        confirm = input(args.asm + TERM_TEXT.overwrite_prompt)
+        confirm = input(args.asm +
+                        text.TerminalText
+                        (args.colored_output)
+                        .overwrite_prompt)
         if confirm in ['y', 'Y']:
+            if args.depreciated:
+                legacy.process_score(args.musicxml,
+                                     args.asm,
+                                     args.config,
+                                     args.noiseless,
+                                     speed,
+                                     args.tempo,
+                                     args.name,
+                                     nameoverride,
+                                     args.custom_loop)
+    else:
+        if args.depreciated:
             legacy.process_score(args.musicxml,
                                  args.asm,
                                  args.config,
@@ -59,16 +77,6 @@ def main():
                                  args.name,
                                  nameoverride,
                                  args.custom_loop)
-    else:
-        legacy.process_score(args.musicxml,
-                             args.asm,
-                             args.config,
-                             args.noiseless,
-                             speed,
-                             args.tempo,
-                             args.name,
-                             nameoverride,
-                             args.custom_loop)
 
 if __name__ == "__main__":
     main()
