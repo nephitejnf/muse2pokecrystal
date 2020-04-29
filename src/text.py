@@ -183,7 +183,6 @@ class TerminalText():
                               '/muse2pokecrystal\n')
 
 
-
 class OutputText():
     """
     Contains text that gets written to the output file.
@@ -195,6 +194,7 @@ class OutputText():
     def __init__(self, pointer_name):
         """Set variables used across methods."""
         self.music_title = pointer_name
+        self.set_default_header_commands()
 
     def music_label(self):
         """Return the music label."""
@@ -216,6 +216,31 @@ class OutputText():
             channel,
             self.music_title
         )
+
+    def set_default_header_commands(self):
+        """
+        Set the default header commands to be fetched.
+
+        Only used if there is no configuration.
+        """
+        self.volume = '\tvolume $77\n'
+        self.notetype_12 = '\tnotetype $c, $95\n'
+        self.notetype_3 = '\tnotetype $c, $15\n'
+        self.notetype_4 = '\tnotetype $c\n'
+        self.dutycycle = '\tdutycycle $2\n'
+        self.togglenoise = '\ttogglenoise 1\n'
+
+
+class XmlText():
+    """Text for xml parsing."""
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def format_part(part):
+        """Format the part into xml."""
+        return './part[@id="{}"]'.format(part)
 
 
 # debugging

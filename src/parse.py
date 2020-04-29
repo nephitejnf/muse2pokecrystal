@@ -16,6 +16,20 @@ class ProcessScore():
         self.populate_part_list()
         self.check_part_list_length()
 
+    def process_to_file_store(self):
+        self.add_headers()
+        # Channel 1
+        print(self.term_text.converting_channel(1, self.part_list))
+        parser_1 = ParseChannel1(self.options, self.song_pointer)
+        channel_1_part = self.xml_root.find(text.XmlText.format_part(self.part_list[0][0]))
+        self.output_file_store.append(parser_1.channel_label())
+        bpm = channel_1_part.find('./measure/direction/sound').get('tempo')
+        divisions = channel_1_part.find('./measure/attributes/divisions')
+        tempo = parser_1.calc_score_tempo(bpm, divisions)
+        channel_1_commands = parser_1.get_initial_channel_commands(tempo)
+        self.output_file_store.extend(channel_1_commands)
+        print(self.output_file_store)
+
     def populate_part_list(self):
         self.part_list = []
         xml_part_list = self.xml_root.find('part-list')
@@ -44,7 +58,6 @@ class ProcessScore():
         if len(self.part_list) < 4:
             self.options.noiseless = True
 
-
     def add_headers(self):
         print(self.term_text.adding_header)
         self.output_file_store.append(self.output_text.music_label())
@@ -58,4 +71,88 @@ class ProcessScore():
             self.output_file_store.append(self.output_text.music_header_234(4))
         self.output_file_store.append('\n\n')
 
-    def
+
+class ChannelParse():
+    """Superclass for parsing each channel."""
+
+    def __init__(self, options, song_pointer, channel):
+        self.output_text = text.OutputText(song_pointer)
+        self.options = options
+        self.song_pointer = song_pointer
+        self.channel = channel
+
+    def channel_label(self):
+        label = 'Music_{}_Ch{}:\n'.format(self.song_pointer, self.channel)
+        return label
+
+    def channel_loop_label(self):
+        loop = 'Music_{}_Ch{}_Loop:\n'.format(self.song_pointer, self.channel)
+        return loop
+
+    def channel_loop(self):
+        loop_channel = '\tloopchannel 0, Music_{}_Ch{}_Loop\n\n\n'.format(
+            self.song_pointer,
+            self.channel
+        )
+        return loop_channel
+
+
+class ParseChannel1(ChannelParse):
+    """Parse channel 1."""
+
+    def __init__(self, options, song_pointer):
+        super().__init__(options, song_pointer, 1)
+
+    def calc_score_tempo(self, bpm, divisions):
+        divisions = int(divisions.text)
+        bpm = int(bpm)
+        smallest_note = float(4 / divisions)
+        tempo = 19200 / bpm
+        tempo = int(round(tempo * smallest_note))
+        return tempo
+
+    def get_initial_channel_commands(self, tempo):
+        commands = []
+        commands.append('\ttempo {}\n'.format(tempo))
+        commands.append(self.output_text.volume)
+        commands.append(self.output_text.notetype_12)
+        commands.append(self.output_text.dutycycle)
+        return commands
+
+
+class ParseChannel2(ChannelParse):
+    """Parse channel 2."""
+
+    def __init__(self, options, song_pointer):
+        super().__init__(options, song_pointer, 2)
+
+    def get_initial_channel_commands(self):
+        commands = []
+        commands.append(self.output_text.notetype_12)
+        commands.append(self.output_text.dutycycle)
+        return commands
+
+
+class ParseChannel3(ChannelParse):
+    """Parse channel 3."""
+
+    def __init__(self, options, song_pointer):
+        super().__init__(options, song_pointer, 3)
+
+    def get_initial_channel_commands(self):
+        commands = []
+        commands.append(self.output_text.notetype_3)
+        return commands
+
+
+class ParseChannel4(ChannelParse):
+    """Parse channel 4."""
+
+    def __init__(self, options, song_pointer):
+        super().__init__(options, song_pointer, 4)
+
+    def get_initial_channel_commands(self):
+        commands = []
+        commands.append(self.output_text.notetype_4)
+        commands.append(self.output_text.togglenoise)
+        return commands

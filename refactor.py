@@ -66,6 +66,8 @@ def main():
                                      args.name,
                                      nameoverride,
                                      args.custom_loop)
+            else:
+                parse.ProcessScore(args).process_to_file_store()
     else:
         if args.depreciated:
             legacy.process_score(args.musicxml,
@@ -77,6 +79,8 @@ def main():
                                  args.name,
                                  nameoverride,
                                  args.custom_loop)
+        else:
+            parse.ProcessScore(args).process_to_file_store()
 
 if __name__ == "__main__":
     main()
