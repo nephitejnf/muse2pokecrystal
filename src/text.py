@@ -71,6 +71,12 @@ class TerminalText():
                         Color(self.colored).end)
         return text_piece_1 + text_piece_2
 
+    def unknown_element(self, measure):
+        return (Color(self.colored).warning +
+                'Unknown element at measure ' +
+                str(measure) +
+                Color(self.colored).end)
+
     def set_constant_text(self):
         """Set all the constant text."""
         self.custom_loop_error = (Color(self.colored).warning +
@@ -141,7 +147,8 @@ class TerminalText():
 
         self.arg_overwrite_desc = 'overwrite output file without prompting'
 
-        self.arg_custom_loop_desc = 'process user defined loops'
+        self.arg_custom_loop_desc = ('process user defined loops'
+                                     '(to be depreciated)')
 
         self.arg_colored_output_desc = 'color code terminal output'
 

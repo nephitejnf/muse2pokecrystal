@@ -1,5 +1,5 @@
 from xml.etree.ElementTree import parse
-from src import text
+from src import text, notes
 
 
 class ProcessScore():
@@ -21,19 +21,36 @@ class ProcessScore():
         # Channel 1
         print(self.term_text.converting_channel(1, self.part_list))
         parser_1 = ParseChannel1(self.options, self.song_pointer)
-        channel_1_part = self.xml_root.find(text.XmlText.format_part(self.part_list[0][0]))
+
+        channel_1_part = self.xml_root.find(
+                        text.XmlText.format_part(
+                            self.part_list[0][0]))
+
         self.output_file_store.append(parser_1.channel_label())
-        bpm = channel_1_part.find('./measure/direction/sound').get('tempo')
-        divisions = channel_1_part.find('./measure/attributes/divisions')
-        tempo = parser_1.calc_score_tempo(bpm, divisions)
+
+        bpm = int(channel_1_part.find(
+            './measure/direction/sound').get('tempo'))
+
+        divisions = int(channel_1_part.find(
+            './measure/attributes/divisions').text)
+
+        tempo = notes.calc_score_tempo(bpm, divisions)
         channel_1_commands = parser_1.get_initial_channel_commands(tempo)
         self.output_file_store.extend(channel_1_commands)
-        print(self.output_file_store)
+        parse_staff_1 = notes.ParseStaff(channel_1_part,
+                                         1,
+                                         self.song_pointer,
+                                         self.options.colored_output)
+        self.output_file_store.extend(parse_staff_1.output_notes(divisions))
+
+        for line in self.output_file_store:
+            print(line, end='')
 
     def populate_part_list(self):
         self.part_list = []
         xml_part_list = self.xml_root.find('part-list')
         for part in xml_part_list.findall('score-part'):
+
             self.part_list.append((part.get('id'),
                                    part.find('part-name').text))
 
@@ -102,14 +119,6 @@ class ParseChannel1(ChannelParse):
 
     def __init__(self, options, song_pointer):
         super().__init__(options, song_pointer, 1)
-
-    def calc_score_tempo(self, bpm, divisions):
-        divisions = int(divisions.text)
-        bpm = int(bpm)
-        smallest_note = float(4 / divisions)
-        tempo = 19200 / bpm
-        tempo = int(round(tempo * smallest_note))
-        return tempo
 
     def get_initial_channel_commands(self, tempo):
         commands = []

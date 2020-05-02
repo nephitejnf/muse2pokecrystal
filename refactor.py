@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import argparse
 from os.path import isfile as filehere
-from src import text, parse
+from src import text, score
 import muse2pokecrystal as legacy
 
 TERM_TEXT = text.TerminalText(False)
@@ -67,7 +67,7 @@ def main():
                                      nameoverride,
                                      args.custom_loop)
             else:
-                parse.ProcessScore(args).process_to_file_store()
+                score.ProcessScore(args).process_to_file_store()
     else:
         if args.depreciated:
             legacy.process_score(args.musicxml,
@@ -80,7 +80,8 @@ def main():
                                  nameoverride,
                                  args.custom_loop)
         else:
-            parse.ProcessScore(args).process_to_file_store()
+            score.ProcessScore(args).process_to_file_store()
+
 
 if __name__ == "__main__":
     main()
