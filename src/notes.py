@@ -69,8 +69,6 @@ class ParseStaff():
         # Generate the rests at the end of the score
         self.release_rest_queue()
 
-        return self.staff_output
-
     def process_notes(self, note):
         full_note = None
         # WARNING: rests may occasionally mess with the command order!
@@ -138,47 +136,6 @@ class ParseStaff():
                                                duration))
             self.force_failure = True
 
-
-    # def handle_tied_note(self, note):
-
-            """
-            print(note.find(text.XmlText().tie_start))
-            if (note.find(text.XmlText().tie_start) is not None and
-                    note.find(text.XmlText().tie_stop) is not None):
-                note_duration += int(note.find('duration').text)
-            elif note.find(text.XmlText().tie_start) is not None:
-                tied_note = True
-                step = self.handle_accidental(pitch)
-                note_duration = int(note.find('duration').text)
-            elif note.find(text.XmlText().tie_stop) is not None:
-                if int(note.find('duration').text) + note_duration > 16:
-                    temp_dura = (int(note.find('duration').text) +
-                                 note_duration)
-                    print(self.term_text.note_too_long(self.channel,
-                                                       self.measure_iterator,
-                                                       temp_dura))
-                    self.force_failure = True
-                if step == self.handle_accidental(pitch):
-                    full_note = self.output_text.full_note_format(
-                        self.handle_accidental(pitch),
-                        note_duration + int(note.find('duration').text))
-                else:
-                    # Is this code ever reached?
-                    self.staff_output.append(self.output_text.full_note_format(
-                        step, note_duration))
-                    full_note = self.output_text.full_note_format(
-                        self.handle_accidental(pitch),
-                        int(note.find('duration').text))
-                tied_note = False
-                step = ''
-                note_duration = 0
-            else:
-                full_note = self.output_text.full_note_format(
-                    self.handle_accidental(pitch), note_duration)
-            if full_note is not None:
-                self.staff_output.append(full_note)
-            """
-
     def handle_octave(self, pitch):
         if int(pitch.find('octave').text) is not self.cur_octave:
             self.cur_octave = int(pitch.find('octave').text)
@@ -244,7 +201,7 @@ class ParseStaff():
         """Handle user defined loops."""
         if command_text == 'loop':
             self.found_user_loops = True
-            return "Music_{}_Ch{}_Loop:\n".format(
+            return 'Music_{}_Ch{}_Loop:\n'.format(
                 self.song_pointer, self.channel)
         return command_text
 

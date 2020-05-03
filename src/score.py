@@ -65,7 +65,83 @@ class ProcessScore():
                                          1,
                                          self.song_pointer,
                                          self.options)
-        self.output_file_store.extend(parse_staff_1.output_notes(divisions))
+        parse_staff_1.output_notes(divisions)
+        if parse_staff_1.found_user_loops is False:
+            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
+                self.song_pointer, 1))
+        self.output_file_store.extend(parse_staff_1.staff_output)
+        self.output_file_store.append(
+            '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
+                self.song_pointer, 1))
+        # Channel 2
+        print(self.term_text.converting_channel(2, self.part_list))
+        parser_2 = ParseChannel2(self.options, self.song_pointer)
+
+        channel_2_part = self.xml_root.find(
+                        text.XmlText.format_part(
+                            self.part_list[1][0]))
+
+        self.output_file_store.append(parser_2.channel_label())
+        channel_2_commands = parser_2.get_initial_channel_commands()
+        self.output_file_store.extend(channel_2_commands)
+        parse_staff_2 = notes.ParseStaff(channel_2_part,
+                                         2,
+                                         self.song_pointer,
+                                         self.options)
+        parse_staff_2.output_notes(divisions)
+        if parse_staff_2.found_user_loops is False:
+            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
+                self.song_pointer, 2))
+        self.output_file_store.extend(parse_staff_2.staff_output)
+        self.output_file_store.append(
+            '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
+                self.song_pointer, 2))
+        # Channel 3
+        print(self.term_text.converting_channel(3, self.part_list))
+        parser_3 = ParseChannel3(self.options, self.song_pointer)
+
+        channel_3_part = self.xml_root.find(
+                        text.XmlText.format_part(
+                            self.part_list[2][0]))
+
+        self.output_file_store.append(parser_3.channel_label())
+        channel_3_commands = parser_3.get_initial_channel_commands()
+        self.output_file_store.extend(channel_3_commands)
+        parse_staff_3 = notes.ParseStaff(channel_3_part,
+                                         3,
+                                         self.song_pointer,
+                                         self.options)
+        parse_staff_3.output_notes(divisions)
+        if parse_staff_3.found_user_loops is False:
+            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
+                self.song_pointer, 3))
+        self.output_file_store.extend(parse_staff_3.staff_output)
+        self.output_file_store.append(
+            '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
+                self.song_pointer, 3))
+        # Channel 4
+        print(self.term_text.converting_channel(4, self.part_list))
+        parser_4 = ParseChannel4(self.options, self.song_pointer)
+
+        channel_4_part = self.xml_root.find(
+                        text.XmlText.format_part(
+                            self.part_list[3][0]))
+
+        self.output_file_store.append(parser_4.channel_label())
+        channel_4_commands = parser_4.get_initial_channel_commands()
+        self.output_file_store.extend(channel_4_commands)
+        parse_staff_4 = notes.ParseStaff(channel_4_part,
+                                         4,
+                                         self.song_pointer,
+                                         self.options)
+        parse_staff_4.output_notes(divisions)
+        if parse_staff_4.found_user_loops is False:
+            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
+                self.song_pointer, 4))
+        self.output_file_store.extend(parse_staff_4.staff_output)
+        self.output_file_store.append(
+            '\tjumpchannel Music_{}_Ch{}_Loop\n'.format(
+                self.song_pointer, 4))
 
         for line in self.output_file_store:
             print(line, end='')
