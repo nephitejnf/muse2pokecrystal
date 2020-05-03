@@ -77,6 +77,31 @@ class TerminalText():
                 str(measure) +
                 Color(self.colored).end)
 
+    def octave_zero(self, channel):
+        return (Color(self.colored).warning +
+                'Octave 0 detected on channel ' +
+                str(channel) +
+                '! This may cause unintended behavior.' +
+                Color(self.colored).end)
+
+    def octave_too_high(self, channel):
+        return (Color(self.colored).warning +
+                'Octave greater than 8 detected on channel ' +
+                str(channel) +
+                '! This may cause unintended behavior.' +
+                Color(self.colored).end)
+
+    def note_too_long(self, channel, measure, duration):
+        return (Color(self.colored).error +
+                'Note too long in Channel ' +
+                str(channel) +
+                '! Note ends at measure ' +
+                str(measure) +
+                '. Note length is ' +
+                str(duration) +
+                '.' +
+                Color(self.colored).end)
+
     def set_constant_text(self):
         """Set all the constant text."""
         self.custom_loop_error = (Color(self.colored).warning +
@@ -95,6 +120,7 @@ class TerminalText():
                                'No tempo was detected. ' +
                                'Try again with the --tempo parameter.' +
                                Color(self.colored).end)
+
         self.parity_check_succeeded = (Color(self.colored).success +
                                        '\nParity check succeeded!' +
                                        Color(self.colored).end)
@@ -151,6 +177,8 @@ class TerminalText():
                                      '(to be depreciated)')
 
         self.arg_colored_output_desc = 'color code terminal output'
+
+        self.arg_no_optimizations_desc = 'disable optimizations'
 
         self.version = 'Muse2pokecrystal Git Development Version'
 
@@ -237,12 +265,27 @@ class OutputText():
         self.dutycycle = '\tdutycycle $2\n'
         self.togglenoise = '\ttogglenoise 1\n'
 
+    def rest_note(self, duration):
+        """
+        Handle rests.
+
+        Todo: Handle new rest macro.
+        """
+        return '\tnote __, {}\n'.format(duration)
+
+    def octave_change(self, octave):
+        return '\toctave {}\n'.format(octave)
+
+    def full_note_format(self, note, length):
+        return '\tnote {}, {}\n'.format(note, length)
+
 
 class XmlText():
     """Text for xml parsing."""
 
     def __init__(self):
-        pass
+        self.tie_start = './tie[@type="start"]'
+        self.tie_stop = './tie[@type="stop"]'
 
     @staticmethod
     def format_part(part):

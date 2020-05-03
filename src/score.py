@@ -40,7 +40,7 @@ class ProcessScore():
         parse_staff_1 = notes.ParseStaff(channel_1_part,
                                          1,
                                          self.song_pointer,
-                                         self.options.colored_output)
+                                         self.options)
         self.output_file_store.extend(parse_staff_1.output_notes(divisions))
 
         for line in self.output_file_store:

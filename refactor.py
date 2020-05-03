@@ -33,6 +33,9 @@ def main():
     parser.add_argument('-C', '--colored-output',
                         action='store_true',
                         help=TERM_TEXT.arg_colored_output_desc)
+    parser.add_argument('-x', '--no-optimizations',
+                        action='store_true',
+                        help=TERM_TEXT.arg_no_optimizations_desc)
     parser.add_argument('-d', '--depreciated', action='store_true')
     parser.add_argument('-v', '--version', action='version',
                         version=TERM_TEXT.version)
