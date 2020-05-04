@@ -1,4 +1,6 @@
 """
+This module contains the methods for note and command parsing.
+
 This module is a part of Muse2pokecrystal.
 
 Copyright (C) 2020  nephitejnf and hyperdriveguy
@@ -34,9 +36,11 @@ class ParseStaff():
         # Make text objects
         self.term_text = text.TerminalText(options.colored_output)
         self.output_text = text.OutputText(song_pointer)
-        # return this value to see if we have to insert a loop for the user
+        # Return this value to see if we have to insert a loop for the user
         self.found_user_loops = False
         # Toggle this value if an error is found
+        # The reason this is done rather than raising an exception is because
+        # this way every single error will be shown without having to rerun.
         self.force_failure = False
         # For more precise warnings and errors
         self.measure_iterator = 0
@@ -53,8 +57,10 @@ class ParseStaff():
         # Lists to store commands to be released when the next note is found
         self.priority_command_queue = []
         self.trivial_command_queue = []
+        # Tempo changes are only parsed when this is > 1
+        self.num_tempo_changes = 0
 
-    def output_notes(self, divisions):
+    def output_notes(self, divisions=None):
         for measure in self.part.findall('measure'):
             self.measure_iterator += 1
             for command in measure:
@@ -188,11 +194,15 @@ class ParseStaff():
                 self.trivial_command_queue.append(command_text)
         except AttributeError:
             # If it throws this error, let's see if it's a bpm change.
+            # It only tries this on channel 1 because all other channels give
+            # None as a parameter for divisions which causes an Exception.
             try:
                 bpm = int(command.find('./sound').get('tempo'))
                 tempo = str(calc_score_tempo(bpm, divisions))
                 command_text = 'tempo ' + tempo
-                self.priority_command_queue.append([0, command_text])
+                self.num_tempo_changes += 1
+                if self.num_tempo_changes > 1:
+                    self.priority_command_queue.append([0, command_text])
             except (TypeError, AttributeError):
                 # Okay, this is a lost cause. Just throw a warning and move on
                 print(self.term_text.unknown_element(self.measure_iterator))

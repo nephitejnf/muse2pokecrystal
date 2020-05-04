@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 """
+The main function and argument parsing for Muse2pokecrystal.
+
 This module is a part of Muse2pokecrystal.
 
 Copyright (C) 2020  nephitejnf and hyperdriveguy

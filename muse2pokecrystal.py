@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 """
+Muse2pokecrystal legacy parsing behavior.
+
 This module is a part of Muse2pokecrystal.
 
 Copyright (C) 2020  nephitejnf and hyperdriveguy

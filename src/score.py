@@ -1,7 +1,7 @@
 """
-This module is a part of Muse2pokecrystal.
+This module contains methods to parsing MusicXML.
 
-This module contains the text for muse2pokecrystal.
+This module is a part of Muse2pokecrystal.
 
 Copyright (C) 2020  nephitejnf and hyperdriveguy
 
@@ -23,7 +23,7 @@ Full plain text license https://www.gnu.org/licenses/agpl-3.0.txt
 
 
 from xml.etree.ElementTree import parse
-from src import text, notes
+from src import text, notes, exceptions
 
 
 class ProcessScore():
@@ -32,116 +32,73 @@ class ProcessScore():
     def __init__(self, options):
         self.output_file_store = []
         self.options = options
-        self.term_text = text.TerminalText(self.options.colored_output)
         self.score_tree = parse(self.options.musicxml)
         self.xml_root = self.score_tree.getroot()
         self.song_pointer = self.generate_pointer_title()
+        self.output_text = text.OutputText(self.song_pointer)
+        self.term_text = text.TerminalText(self.options.colored_output)
         self.output_text = text.OutputText(self.song_pointer)
         self.populate_part_list()
         self.check_part_list_length()
 
     def process_to_file_store(self):
         self.add_headers()
-        # Channel 1
-        print(self.term_text.converting_channel(1, self.part_list))
-        parser_1 = ParseChannel1(self.options, self.song_pointer)
-
-        channel_1_part = self.xml_root.find(
-                        text.XmlText.format_part(
-                            self.part_list[0][0]))
-
-        self.output_file_store.append(parser_1.channel_label())
-
-        bpm = int(channel_1_part.find(
-            './measure/direction/sound').get('tempo'))
-
-        divisions = int(channel_1_part.find(
-            './measure/attributes/divisions').text)
-
-        tempo = notes.calc_score_tempo(bpm, divisions)
-        channel_1_commands = parser_1.get_initial_channel_commands(tempo)
-        self.output_file_store.extend(channel_1_commands)
-        parse_staff_1 = notes.ParseStaff(channel_1_part,
-                                         1,
-                                         self.song_pointer,
-                                         self.options)
-        parse_staff_1.output_notes(divisions)
-        if parse_staff_1.found_user_loops is False:
-            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
-                self.song_pointer, 1))
-        self.output_file_store.extend(parse_staff_1.staff_output)
-        self.output_file_store.append(
-            '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
-                self.song_pointer, 1))
-        # Channel 2
-        print(self.term_text.converting_channel(2, self.part_list))
-        parser_2 = ParseChannel2(self.options, self.song_pointer)
-
-        channel_2_part = self.xml_root.find(
-                        text.XmlText.format_part(
-                            self.part_list[1][0]))
-
-        self.output_file_store.append(parser_2.channel_label())
-        channel_2_commands = parser_2.get_initial_channel_commands()
-        self.output_file_store.extend(channel_2_commands)
-        parse_staff_2 = notes.ParseStaff(channel_2_part,
-                                         2,
-                                         self.song_pointer,
-                                         self.options)
-        parse_staff_2.output_notes(divisions)
-        if parse_staff_2.found_user_loops is False:
-            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
-                self.song_pointer, 2))
-        self.output_file_store.extend(parse_staff_2.staff_output)
-        self.output_file_store.append(
-            '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
-                self.song_pointer, 2))
-        # Channel 3
-        print(self.term_text.converting_channel(3, self.part_list))
-        parser_3 = ParseChannel3(self.options, self.song_pointer)
-
-        channel_3_part = self.xml_root.find(
-                        text.XmlText.format_part(
-                            self.part_list[2][0]))
-
-        self.output_file_store.append(parser_3.channel_label())
-        channel_3_commands = parser_3.get_initial_channel_commands()
-        self.output_file_store.extend(channel_3_commands)
-        parse_staff_3 = notes.ParseStaff(channel_3_part,
-                                         3,
-                                         self.song_pointer,
-                                         self.options)
-        parse_staff_3.output_notes(divisions)
-        if parse_staff_3.found_user_loops is False:
-            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
-                self.song_pointer, 3))
-        self.output_file_store.extend(parse_staff_3.staff_output)
-        self.output_file_store.append(
-            '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
-                self.song_pointer, 3))
-        # Channel 4
-        print(self.term_text.converting_channel(4, self.part_list))
-        parser_4 = ParseChannel4(self.options, self.song_pointer)
-
-        channel_4_part = self.xml_root.find(
-                        text.XmlText.format_part(
-                            self.part_list[3][0]))
-
-        self.output_file_store.append(parser_4.channel_label())
-        channel_4_commands = parser_4.get_initial_channel_commands()
-        self.output_file_store.extend(channel_4_commands)
-        parse_staff_4 = notes.ParseStaff(channel_4_part,
-                                         4,
-                                         self.song_pointer,
-                                         self.options)
-        parse_staff_4.output_notes(divisions)
-        if parse_staff_4.found_user_loops is False:
-            self.output_file_store.append('Music_{}_Ch{}_Loop:\n'.format(
-                self.song_pointer, 4))
-        self.output_file_store.extend(parse_staff_4.staff_output)
-        self.output_file_store.append(
-            '\tjumpchannel Music_{}_Ch{}_Loop\n'.format(
-                self.song_pointer, 4))
+        already_found_user_loop = False
+        for channel in range(1, 5):
+            print(self.term_text.converting_channel(channel, self.part_list))
+            if channel == 1:
+                channel_parser = ParseChannel1(self.options, self.song_pointer)
+            if channel == 2:
+                channel_parser = ParseChannel2(self.options, self.song_pointer)
+            if channel == 3:
+                channel_parser = ParseChannel3(self.options, self.song_pointer)
+            if channel == 4:
+                channel_parser = ParseChannel4(self.options, self.song_pointer)
+            channel_part = self.xml_root.find(text.XmlText.format_part(
+                self.part_list[channel - 1][0]))
+            self.output_file_store.append(channel_parser.channel_label())
+            if channel == 1:
+                # The tempo parameter is fetched because the text isn't always
+                # consistent with the actual tempo. This also allows for
+                # handling less standard tempo indication.
+                bpm = int(channel_part.find(
+                    './measure/direction/sound').get('tempo'))
+                # We need the divisions so that the bpm can be adjusted.
+                divisions = int(channel_part.find(
+                    './measure/attributes/divisions').text)
+                tempo = notes.calc_score_tempo(bpm, divisions)
+                channel_commands = channel_parser.get_initial_channel_commands(
+                    tempo)
+            else:
+                # divisions = None
+                channel_commands = \
+                    channel_parser.get_initial_channel_commands()
+            self.output_file_store.extend(channel_commands)
+            parse_staff = notes.ParseStaff(channel_part,
+                                           channel,
+                                           self.song_pointer,
+                                           self.options)
+            parse_staff.output_notes(divisions)
+            if parse_staff.found_user_loops is False:
+                if already_found_user_loop is True:
+                    raise exceptions.MusicDesyncError(
+                        self.term_text.desync_error +
+                        self.term_text.conversion_incomplete
+                        )
+                self.output_file_store.append(
+                    self.output_text.channel_loop_label(channel))
+            else:
+                if channel != 4:
+                    already_found_user_loop = True
+                else:
+                    if already_found_user_loop is False:
+                        raise exceptions.MusicDesyncError(
+                            self.term_text.desync_error +
+                            self.term_text.conversion_incomplete
+                            )
+            self.output_file_store.extend(parse_staff.staff_output)
+            self.output_file_store.append(
+                self.output_text.channel_loop_end(channel))
 
         for line in self.output_file_store:
             print(line, end='')

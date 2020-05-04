@@ -1,4 +1,6 @@
 """
+This module contains the text for Muse2pokecrystal.
+
 This module is a part of Muse2pokecrystal.
 
 Copyright (C) 2020  nephitejnf and hyperdriveguy
@@ -140,6 +142,13 @@ class TerminalText():
                                'Try again with the --tempo parameter.' +
                                Color(self.colored).end)
 
+        self.desync_error = (Color(self.colored).warning +
+                             'User defined loops are inconsistent ' +
+                             'across channels. ' +
+                             'Make sure that all channels have a ' +
+                             '"loop" element.' +
+                             Color(self.colored).end)
+
         self.parity_check_succeeded = (Color(self.colored).success +
                                        '\nParity check succeeded!' +
                                        Color(self.colored).end)
@@ -271,19 +280,6 @@ class OutputText():
             self.music_title
         )
 
-    def set_default_header_commands(self):
-        """
-        Set the default header commands to be fetched.
-
-        Only used if there is no configuration.
-        """
-        self.volume = '\tvolume $77\n'
-        self.notetype_12 = '\tnotetype $c, $95\n'
-        self.notetype_3 = '\tnotetype $c, $15\n'
-        self.notetype_4 = '\tnotetype $c\n'
-        self.dutycycle = '\tdutycycle $2\n'
-        self.togglenoise = '\ttogglenoise 1\n'
-
     def rest_note(self, duration):
         """
         Handle rests.
@@ -298,6 +294,25 @@ class OutputText():
     def full_note_format(self, note, length):
         return '\tnote {}, {}\n'.format(note, length)
 
+    def channel_loop_label(self, channel):
+        return 'Music_{}_Ch{}_Loop:\n'.format(self.music_title, channel)
+
+    def channel_loop_end(self, channel):
+        return '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
+            self.music_title, channel)
+
+    def set_default_header_commands(self):
+        """
+        Set the default header commands to be fetched.
+
+        Only used if there is no configuration.
+        """
+        self.volume = '\tvolume $77\n'
+        self.notetype_12 = '\tnotetype $c, $95\n'
+        self.notetype_3 = '\tnotetype $c, $15\n'
+        self.notetype_4 = '\tnotetype $c\n'
+        self.dutycycle = '\tdutycycle $2\n'
+        self.togglenoise = '\ttogglenoise 1\n'
 
 class XmlText():
     """Text for xml parsing."""
