@@ -176,11 +176,11 @@ class ParseStaff():
             nibble = 'b'
         elif int(altered_pitch) == 1:
             nibble = '#'
-        formated_note = '{}{}'.format(step, nibble)
+        formatted_note = '{}{}'.format(step, nibble)
         # Respell flat and odd notes
-        if formated_note in bad_notes:
-            formated_note = bad_notes[formated_note]
-        return formated_note
+        if formatted_note in bad_notes:
+            formatted_note = bad_notes[formatted_note]
+        return formatted_note
 
     def process_commands(self, command, divisions):
         try:
@@ -236,11 +236,11 @@ class ParseStaff():
         command_quantity = len(output_queue)
         for command in output_queue:
             if '_Loop:' in command:
-                formated_command = "\n{}".format(command)
+                formatted_command = "\n{}".format(command)
             else:
-                formated_command = "\t{}\n".format(command)
-            if formated_command is not None:
-                self.staff_output.append(formated_command)
+                formatted_command = "\t{}\n".format(command)
+            if formatted_command is not None:
+                self.staff_output.append(formatted_command)
         # clear all the lists
         self.priority_command_queue.clear()
         self.trivial_command_queue.clear()

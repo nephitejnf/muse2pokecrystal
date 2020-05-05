@@ -1,5 +1,5 @@
 """
-This module contains methods to parsing MusicXML.
+This module contains methods for constructing the output music script.
 
 This module is a part of Muse2pokecrystal.
 
@@ -23,7 +23,7 @@ Full plain text license https://www.gnu.org/licenses/agpl-3.0.txt
 
 
 from xml.etree.ElementTree import parse
-from src import text, notes, exceptions
+from src import text, notes, exceptions, config
 
 
 class ProcessScore():
@@ -35,7 +35,6 @@ class ProcessScore():
         self.score_tree = parse(self.options.musicxml)
         self.xml_root = self.score_tree.getroot()
         self.song_pointer = self.generate_pointer_title()
-        self.output_text = text.OutputText(self.song_pointer)
         self.term_text = text.TerminalText(self.options.colored_output)
         self.output_text = text.OutputText(self.song_pointer)
         self.populate_part_list()
@@ -56,7 +55,9 @@ class ProcessScore():
                 channel_parser = ParseChannel4(self.options, self.song_pointer)
             channel_part = self.xml_root.find(text.XmlText.format_part(
                 self.part_list[channel - 1][0]))
-            self.output_file_store.append(channel_parser.channel_label())
+            self.output_file_store.append(
+                self.output_text.channel_label(
+                    channel))
             if channel == 1:
                 # The tempo parameter is fetched because the text isn't always
                 # consistent with the actual tempo. This also allows for
@@ -152,23 +153,22 @@ class ChannelParse():
     def __init__(self, options, song_pointer, channel):
         self.output_text = text.OutputText(song_pointer)
         self.options = options
+        if self.options.config is not None:
+            self.song_config = config.SongConfig(options)
+        else:
+            self.song_config = None
         self.song_pointer = song_pointer
         self.channel = channel
 
-    def channel_label(self):
-        label = 'Music_{}_Ch{}:\n'.format(self.song_pointer, self.channel)
-        return label
+    def get_initial_channel_commands(self):
+        """Use configuration if specified, if not use fallback."""
+        if self.song_config is None:
+            self.get_fallback_channel_commands()
+        else:
+            return self.song_config.read_channel_conf(self.channel)
 
-    def channel_loop_label(self):
-        loop = 'Music_{}_Ch{}_Loop:\n'.format(self.song_pointer, self.channel)
-        return loop
-
-    def channel_loop(self):
-        loop_channel = '\tloopchannel 0, Music_{}_Ch{}_Loop\n\n\n'.format(
-            self.song_pointer,
-            self.channel
-        )
-        return loop_channel
+    def get_fallback_channel_commands(self):
+        """Meant to be overwritten by inheritance."""
 
 
 class ParseChannel1(ChannelParse):
@@ -178,8 +178,18 @@ class ParseChannel1(ChannelParse):
         super().__init__(options, song_pointer, 1)
 
     def get_initial_channel_commands(self, tempo):
+        """Use configuration if specified, if not use fallback."""
+        if self.song_config is None:
+            self.get_fallback_channel_commands(tempo)
+        else:
+            commands = []
+            commands.append(self.output_text.format_tempo_command(tempo))
+            commands.extend(self.song_config.read_channel_conf(self.channel))
+            return commands
+
+    def get_fallback_channel_commands(self, tempo):
         commands = []
-        commands.append('\ttempo {}\n'.format(tempo))
+        commands.append(self.output_text.format_tempo_command(tempo))
         commands.append(self.output_text.volume)
         commands.append(self.output_text.notetype_12)
         commands.append(self.output_text.dutycycle)
@@ -192,7 +202,7 @@ class ParseChannel2(ChannelParse):
     def __init__(self, options, song_pointer):
         super().__init__(options, song_pointer, 2)
 
-    def get_initial_channel_commands(self):
+    def get_fallback_channel_commands(self):
         commands = []
         commands.append(self.output_text.notetype_12)
         commands.append(self.output_text.dutycycle)
@@ -205,7 +215,7 @@ class ParseChannel3(ChannelParse):
     def __init__(self, options, song_pointer):
         super().__init__(options, song_pointer, 3)
 
-    def get_initial_channel_commands(self):
+    def get_fallback_channel_commands(self):
         commands = []
         commands.append(self.output_text.notetype_3)
         return commands
@@ -217,7 +227,7 @@ class ParseChannel4(ChannelParse):
     def __init__(self, options, song_pointer):
         super().__init__(options, song_pointer, 4)
 
-    def get_initial_channel_commands(self):
+    def get_fallback_channel_commands(self):
         commands = []
         commands.append(self.output_text.notetype_4)
         commands.append(self.output_text.togglenoise)

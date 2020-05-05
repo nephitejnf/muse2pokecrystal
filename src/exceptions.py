@@ -5,6 +5,9 @@ Why use custom exceptions at all?
 1) So we can distinguish actual bugs from user error a little better.
 2) Allow for more graceful exits.
 
+Exceptions are only used for showstopper errors that output garbage.
+Warnings are printed using print().
+
 This module is a part of Muse2pokecrystal.
 
 Copyright (C) 2020  nephitejnf and hyperdriveguy
@@ -30,6 +33,15 @@ class MusicDesyncError(RuntimeError):
     """Music desync exception."""
 
     def __init__(self, message, errors=None):
+        """Inherit exception."""
+        super().__init__(message)
+        self.errors = errors
+
+
+class MusicConfigError(ValueError):
+    """Invalid music configuration exception."""
+
+    def __init__(self, message=None, errors=None):
         """Inherit exception."""
         super().__init__(message)
         self.errors = errors

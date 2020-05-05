@@ -125,7 +125,7 @@ class TerminalText():
 
     def set_constant_text(self):
         """Set all the constant text."""
-        self.custom_loop_error = (Color(self.colored).warning +
+        self.custom_loop_error = (Color(self.colored).error +
                                   'A user defined loop was found; however, ' +
                                   'the --custom-loop parameter' +
                                   ' was not toggled.\n' +
@@ -137,17 +137,32 @@ class TerminalText():
                                       '\nConversion incomplete!' +
                                       Color(self.colored).end)
 
-        self.no_tempo_error = (Color(self.colored).warning +
+        self.no_tempo_error = (Color(self.colored).error +
                                'No tempo was detected. ' +
                                'Try again with the --tempo parameter.' +
                                Color(self.colored).end)
 
-        self.desync_error = (Color(self.colored).warning +
+        self.desync_error = (Color(self.colored).error +
                              'User defined loops are inconsistent ' +
                              'across channels. ' +
                              'Make sure that all channels have a ' +
                              '"loop" element.' +
                              Color(self.colored).end)
+
+        self.invalid_configuration = (Color(self.colored).error +
+                                      'Provided configuration has an ' +
+                                      'invalid required value.' +
+                                      Color(self.colored).end)
+
+        self.hex_value_too_large = (Color(self.colored).warning +
+                                    'Hex value in configuration ' +
+                                    'is too large.' +
+                                    Color(self.colored).end)
+
+        self.invalid_steropanning = (Color(self.colored).warning +
+                                     'Invalid stereopanning command in ' +
+                                     'in configuration.' +
+                                     Color(self.colored).end)
 
         self.parity_check_succeeded = (Color(self.colored).success +
                                        '\nParity check succeeded!' +
@@ -164,6 +179,11 @@ class TerminalText():
                                  'Do you want to continue ' +
                                  'and overwrite? [y/N]: ' +
                                  Color(self.colored).end)
+
+        self.high_volume_warning = (Color(self.colored).warning +
+                                    'Volume setting exceeds $77. ' +
+                                    'This may cause unintended behavior.' +
+                                    Color(self.colored).end)
 
         self.generic_name = (Color(self.colored).info +
                              'Could not guess song name. Using generic name.' +
@@ -280,19 +300,8 @@ class OutputText():
             self.music_title
         )
 
-    def rest_note(self, duration):
-        """
-        Handle rests.
-
-        Todo: Handle new rest macro.
-        """
-        return '\tnote __, {}\n'.format(duration)
-
-    def octave_change(self, octave):
-        return '\toctave {}\n'.format(octave)
-
-    def full_note_format(self, note, length):
-        return '\tnote {}, {}\n'.format(note, length)
+    def channel_label(self, channel):
+        return 'Music_{}_Ch{}:\n'.format(self.music_title, channel)
 
     def channel_loop_label(self, channel):
         return 'Music_{}_Ch{}_Loop:\n'.format(self.music_title, channel)
@@ -301,18 +310,70 @@ class OutputText():
         return '\tjumpchannel Music_{}_Ch{}_Loop\n\n\n'.format(
             self.music_title, channel)
 
+    @staticmethod
+    def rest_note(duration):
+        """
+        Handle rests.
+
+        Todo: Handle new rest macro.
+        """
+        return '\tnote __, {}\n'.format(duration)
+
+    @staticmethod
+    def octave_change(octave):
+        return '\toctave {}\n'.format(octave)
+
+    @staticmethod
+    def full_note_format(note, length):
+        return '\tnote {}, {}\n'.format(note, length)
+
+    @staticmethod
+    def format_tempo_command(tempo):
+        return '\ttempo {}\n'.format(tempo)
+
+    @staticmethod
+    def format_notetype_command(length, intensity=None):
+        if intensity is None:
+            return '\tnotetype {}\n'.format(length)
+        return '\tnotetype {}, {}\n'.format(length, intensity)
+
+    @staticmethod
+    def format_volume_command(volume):
+        return '\tvolume {}\n'.format(volume)
+
+    @staticmethod
+    def format_togglenoise_command(togglenoise):
+        return '\ttogglenoise {}\n'.format(togglenoise)
+
+    @staticmethod
+    def format_dutycycle_command(dutycycle):
+        return '\tdutycycle {}\n'.format(dutycycle)
+
+    @staticmethod
+    def format_tone_command(tone):
+        return '\ttone {}\n'.format(tone)
+
+    @staticmethod
+    def format_stereopanning_command(stereopanning):
+        return '\tstereopanning {}\n'.format(stereopanning)
+
+    @staticmethod
+    def format_vibrato_command(vibrato_delay, vibrato_extent):
+        return '\tvibrato {}, {}\n'.format(vibrato_delay, vibrato_extent)
+
     def set_default_header_commands(self):
         """
         Set the default header commands to be fetched.
 
         Only used if there is no configuration.
         """
-        self.volume = '\tvolume $77\n'
-        self.notetype_12 = '\tnotetype $c, $95\n'
-        self.notetype_3 = '\tnotetype $c, $15\n'
-        self.notetype_4 = '\tnotetype $c\n'
-        self.dutycycle = '\tdutycycle $2\n'
-        self.togglenoise = '\ttogglenoise 1\n'
+        self.volume = self.format_volume_command('$77')
+        self.notetype_12 = self.format_notetype_command('$c', '$95')
+        self.notetype_3 = self.format_notetype_command('$c', '$15')
+        self.notetype_4 = self.format_notetype_command('$c')
+        self.dutycycle = self.format_dutycycle_command('$2')
+        self.togglenoise = self.format_togglenoise_command('1')
+
 
 class XmlText():
     """Text for xml parsing."""
