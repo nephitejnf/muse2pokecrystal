@@ -25,7 +25,7 @@ Full plain text license https://www.gnu.org/licenses/agpl-3.0.txt
 
 import argparse
 from os.path import isfile as filehere
-from src import text, score
+from src import text, fileio
 import muse2pokecrystal as legacy
 
 TERM_TEXT = text.TerminalText(False)
@@ -94,7 +94,7 @@ def main():
                                      nameoverride,
                                      args.custom_loop)
             else:
-                score.ProcessScore(args).process_to_file_store()
+                fileio.write_music_file(args)
     else:
         if args.depreciated:
             legacy.process_score(args.musicxml,
@@ -107,7 +107,7 @@ def main():
                                  nameoverride,
                                  args.custom_loop)
         else:
-            score.ProcessScore(args).process_to_file_store()
+            fileio.write_music_file(args)
 
 
 if __name__ == "__main__":

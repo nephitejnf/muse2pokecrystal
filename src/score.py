@@ -100,9 +100,7 @@ class ProcessScore():
             self.output_file_store.extend(parse_staff.staff_output)
             self.output_file_store.append(
                 self.output_text.channel_loop_end(channel))
-
-        for line in self.output_file_store:
-            print(line, end='')
+        return self.output_file_store
 
     def populate_part_list(self):
         self.part_list = []
