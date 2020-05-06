@@ -5,7 +5,7 @@ Running the script is pretty simple.
 ```
 muse2pokecrystal -h
 ```
-This shows the short flags to remind you incase you forget.
+This shows the short flags to remind you in case you forget.
 
 `--score` or `-i` both take input.
 `--code` or `-o` both are your output.
