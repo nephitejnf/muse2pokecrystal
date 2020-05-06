@@ -44,6 +44,7 @@ class ParseStaff():
         self.force_failure = False
         # For more precise warnings and errors
         self.measure_iterator = 0
+        self.channel_length = 0
         # Note processing variables
         self.tied_note_duration = 0
         self.tied_note = False
@@ -80,6 +81,7 @@ class ParseStaff():
         # WARNING: rests may occasionally mess with the command order!
         if note.find('rest') is not None:
             self.rest_length_queue += int(note.find('duration').text)
+            self.channel_length += int(note.find('duration').text)
             if self.no_optimizations:
                 self.release_rest_queue()
         else:
@@ -96,6 +98,7 @@ class ParseStaff():
                     # Start a new tied note
                     self.tied_note = True
                     self.tied_note_duration += int(note.find('duration').text)
+                    self.channel_length += int(note.find('duration').text)
                 # Yay, it's a normal note!
                 else:
                     full_note = self.output_text.full_note_format(
@@ -103,6 +106,7 @@ class ParseStaff():
                         int(note.find('duration').text))
                     self.note_duration_check(int(note.find('duration').text))
                     self.staff_output.append(full_note)
+                    self.channel_length += int(note.find('duration').text)
             # Aw heck, it is tied
             else:
                 # Does the tie end here?
@@ -112,6 +116,7 @@ class ParseStaff():
                         note.find(text.XmlText().tie_start) is None):
                     # Finalize the duration
                     self.tied_note_duration += int(note.find('duration').text)
+                    self.channel_length += int(note.find('duration').text)
                     # Write the note
                     full_note = self.output_text.full_note_format(
                         self.handle_accidental(pitch),
@@ -125,6 +130,7 @@ class ParseStaff():
                 elif (note.find(text.XmlText().tie_stop) is not None and
                       note.find(text.XmlText().tie_start) is not None):
                     self.tied_note_duration += int(note.find('duration').text)
+                    self.channel_length += int(note.find('duration').text)
 
     def release_rest_queue(self):
         if self.rest_length_queue > 0:

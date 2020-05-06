@@ -43,6 +43,7 @@ class ProcessScore():
     def process_to_file_store(self):
         self.add_headers()
         already_found_user_loop = False
+        channel_lengths = []
         for channel in range(1, 5):
             print(self.term_text.converting_channel(channel, self.part_list))
             if channel == 1:
@@ -80,6 +81,18 @@ class ProcessScore():
                                            self.song_pointer,
                                            self.options)
             parse_staff.output_notes(divisions)
+            # Check for desync errors
+            # Channel length parity check
+            channel_lengths.append(parse_staff.channel_length)
+            if len(channel_lengths) > 1:
+                if (channel_lengths[channel - 1] !=
+                        channel_lengths[channel - 2]):
+                    for chan in range(0, len(channel_lengths)):
+                        print('Channel {} length: '.format(chan + 1) +
+                              str(channel_lengths[chan]))
+                    raise exceptions.MusicDesyncError(
+                        self.term_text.parity_check_failed, channel_lengths)
+            # Check to make sure user defined loops are consistent
             if parse_staff.found_user_loops is False:
                 if already_found_user_loop is True:
                     raise exceptions.MusicDesyncError(

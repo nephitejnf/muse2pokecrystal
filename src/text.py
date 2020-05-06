@@ -170,8 +170,8 @@ class TerminalText():
 
         self.parity_check_failed = (Color(self.colored).error +
                                     '\nParity check failed!\n' +
-                                    'Check that there is only ' +
-                                    'one note per channel!' +
+                                    'Check that there are no ' +
+                                    'chords in any channel!' +
                                     Color(self.colored).end)
 
         self.overwrite_prompt = (Color(self.colored).warning +
