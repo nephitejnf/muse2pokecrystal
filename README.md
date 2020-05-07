@@ -7,6 +7,8 @@ The fourth drumset channel is optional.
 
 [See the results!](https://www.youtube.com/watch?v=Iefmxd7u59o&feature=youtu.be)
 
+Join the conversation or contribute over on [my discord](https://discord.gg/XAwPxFW). Most of the coordination happens there and things are easier to keep up on as updates to it happen.
+
 Muse2pokecrystal is licensed under [AGPL v3.0](https://www.gnu.org/licenses/agpl-3.0.txt)
 
 Template is licensed as CC0 or in the Public Domain
