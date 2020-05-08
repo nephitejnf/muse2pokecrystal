@@ -182,8 +182,14 @@ class TerminalText():
 
         self.high_volume_warning = (Color(self.colored).warning +
                                     'Volume setting exceeds $77. ' +
-                                    'This may cause unintended behavior.' +
+                                    'Correcting volume to $77.' +
                                     Color(self.colored).end)
+
+        self.grace_notes_unsupported = (Color(self.colored).warning +
+                                        'Grace notes are not supported. ' +
+                                        'Try using a pitch slide or ' +
+                                        'simplifying the note.' +
+                                        Color(self.colored).end)
 
         self.generic_name = (Color(self.colored).info +
                              'Could not guess song name. Using generic name.' +
@@ -191,7 +197,7 @@ class TerminalText():
 
         self.no_noise_channel = (Color(self.colored).info +
                                  'No noise channel. ' +
-                                 'Reprocessing without noise channel...' +
+                                 'Reprocessing without noise channel.' +
                                  Color(self.colored).end)
 
         self.conversion_success = (Color(self.colored).complete +

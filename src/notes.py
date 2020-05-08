@@ -72,12 +72,21 @@ class ParseStaff():
                             len(self.trivial_command_queue) > 0):
                         self.release_rest_queue()
                     self.release_command_queue()
-                    self.process_notes(command)
+                    # Only process voice 1 to avoid desyncs
+                    if int(command.find('voice').text) == 1:
+                        try:
+                            self.process_notes(command)
+                        except AttributeError:
+                            print('SOMETHING WENT WRONG REEEEEEEEEEEE')
         # Generate the rests at the end of the score
         self.release_rest_queue()
 
     def process_notes(self, note):
         full_note = None
+        if note.find('grace') is not None:
+            print(self.term_text.grace_notes_unsupported)
+            # Early return so we don't have to deal with attribute errors
+            return
         # WARNING: rests may occasionally mess with the command order!
         if note.find('rest') is not None:
             self.rest_length_queue += int(note.find('duration').text)
