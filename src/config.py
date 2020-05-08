@@ -71,6 +71,7 @@ class SongConfig():
                 False,
                 '77'):
             print(self.term_text.high_volume_warning)
+            self.channel_config['volume'] = '$77'
         self.add_to_output(text.OutputText.format_volume_command, 'volume')
 
     def add_notetype_1(self):
