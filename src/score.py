@@ -173,10 +173,10 @@ class ChannelParse():
 
     def get_initial_channel_commands(self):
         """Use configuration if specified, if not use fallback."""
-        if self.song_config is None:
-            self.get_fallback_channel_commands()
-        else:
+        try:
             return self.song_config.read_channel_conf(self.channel)
+        except AttributeError:
+            return self.get_fallback_channel_commands()
 
     def get_fallback_channel_commands(self):
         """Meant to be overwritten by inheritance."""
@@ -189,14 +189,14 @@ class ParseChannel1(ChannelParse):
         super().__init__(options, song_pointer, 1)
 
     def get_initial_channel_commands(self, tempo):
-        """Use configuration if specified, if not use fallback."""
-        if self.song_config is None:
-            self.get_fallback_channel_commands(tempo)
-        else:
-            commands = []
-            commands.append(self.output_text.format_tempo_command(tempo))
+        """Use configuration if specified, if not, use fallback."""
+        commands = []
+        commands.append(self.output_text.format_tempo_command(tempo))
+        try:
             commands.extend(self.song_config.read_channel_conf(self.channel))
-            return commands
+        except AttributeError:
+            commands.extend(self.get_fallback_channel_commands(tempo))
+        return commands
 
     def get_fallback_channel_commands(self, tempo):
         commands = []
