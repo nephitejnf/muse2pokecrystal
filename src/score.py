@@ -191,16 +191,15 @@ class ParseChannel1(ChannelParse):
     def get_initial_channel_commands(self, tempo):
         """Use configuration if specified, if not, use fallback."""
         commands = []
-        commands.append(self.output_text.format_tempo_command(tempo))
         try:
+            commands.append(self.output_text.format_tempo_command(tempo))
             commands.extend(self.song_config.read_channel_conf(self.channel))
         except AttributeError:
-            commands.extend(self.get_fallback_channel_commands(tempo))
+            commands.extend(self.get_fallback_channel_commands())
         return commands
 
-    def get_fallback_channel_commands(self, tempo):
+    def get_fallback_channel_commands(self):
         commands = []
-        commands.append(self.output_text.format_tempo_command(tempo))
         commands.append(self.output_text.volume)
         commands.append(self.output_text.notetype_12)
         commands.append(self.output_text.dutycycle)
