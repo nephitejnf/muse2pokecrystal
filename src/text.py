@@ -123,6 +123,13 @@ class TerminalText():
                 '.' +
                 Color(self.colored).end)
 
+    def chord_ignore(self, measure):
+        return (Color(self.colored).warning +
+                'Ignoring top notes in chord at measure ' +
+                str(measure) +
+                '.' +
+                Color(self.colored).end)
+
     def set_constant_text(self):
         """Set all the constant text."""
         self.custom_loop_error = (Color(self.colored).error +
