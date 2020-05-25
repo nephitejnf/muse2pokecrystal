@@ -193,6 +193,13 @@ class ParseStaff():
         elif int(altered_pitch) == 1:
             nibble = '#'
         formatted_note = '{}{}'.format(step, nibble)
+        # Handle an out of the ordinary octave change
+        if formatted_note == 'Cb':
+            if 'octave' in self.staff_output[-1]:
+                self.staff_output.pop(-1)
+            self.staff_output.append(
+                self.output_text.octave_change(
+                    self.cur_octave - 1))
         # Respell flat and odd notes
         if formatted_note in bad_notes:
             formatted_note = bad_notes[formatted_note]
@@ -227,8 +234,11 @@ class ParseStaff():
         """Handle user defined loops."""
         if command_text == 'loop':
             self.found_user_loops = True
-            return 'Music_{}_Ch{}_Loop:\n'.format(
+            loop_text = 'Music_{}_Ch{}_Loop:\n'.format(
                 self.song_pointer, self.channel)
+            octave_text = self.output_text.octave_change(
+                self.cur_octave)
+            return loop_text + octave_text
         return command_text
 
     def release_command_queue(self):
