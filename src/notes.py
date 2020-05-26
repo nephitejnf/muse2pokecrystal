@@ -53,6 +53,7 @@ class ParseStaff():
         # Set the current octave to -1 so it's always
         # overridden by the first iteration.
         self.cur_octave = -1
+        self.pre_loop_octave = -1
         # List to return for file output
         self.staff_output = []
         # Lists to store commands to be released when the next note is found
@@ -75,6 +76,22 @@ class ParseStaff():
                     # Only process voice 1 to avoid desyncs
                     if int(command.find('voice').text) == 1:
                         self.process_notes(command)
+        if (self.found_user_loops and
+                self.pre_loop_octave is not self.cur_octave):
+            print('PRE:')
+            print(self.staff_output)
+            octave_index = self.staff_output.index(
+                '\n' + self.output_text.channel_loop_label(self.channel)) + 1
+            if 'octave' not in self.staff_output[octave_index]:
+                try:
+                    self.staff_output.insert(
+                        octave_index, self.output_text.octave_change(
+                            self.pre_loop_octave))
+                except ValueError:
+                    pass
+
+            print('POST:')
+            print(self.staff_output)
         # Generate the rests at the end of the score
         self.release_rest_queue()
 
@@ -233,12 +250,9 @@ class ParseStaff():
     def handle_loop(self, command_text):
         """Handle user defined loops."""
         if command_text == 'loop':
+            self.pre_loop_octave = self.cur_octave
             self.found_user_loops = True
-            loop_text = 'Music_{}_Ch{}_Loop:\n'.format(
-                self.song_pointer, self.channel)
-            octave_text = self.output_text.octave_change(
-                self.cur_octave)
-            return loop_text + octave_text
+            command_text = self.output_text.channel_loop_label(self.channel)
         return command_text
 
     def release_command_queue(self):

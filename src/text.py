@@ -334,6 +334,9 @@ class OutputText():
 
     @staticmethod
     def octave_change(octave):
+        if octave > 8 or octave < 1:
+            raise ValueError(
+                'Invalid octave {}'.format(octave))
         return '\toctave {}\n'.format(octave)
 
     @staticmethod
