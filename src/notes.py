@@ -78,8 +78,6 @@ class ParseStaff():
                         self.process_notes(command)
         if (self.found_user_loops and
                 self.pre_loop_octave is not self.cur_octave):
-            print('PRE:')
-            print(self.staff_output)
             octave_index = self.staff_output.index(
                 '\n' + self.output_text.channel_loop_label(self.channel)) + 1
             if 'octave' not in self.staff_output[octave_index]:
@@ -89,9 +87,6 @@ class ParseStaff():
                             self.pre_loop_octave))
                 except ValueError:
                     pass
-
-            print('POST:')
-            print(self.staff_output)
         # Generate the rests at the end of the score
         self.release_rest_queue()
 
