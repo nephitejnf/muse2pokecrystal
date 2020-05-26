@@ -44,7 +44,13 @@ class ProcessScore():
         self.add_headers()
         already_found_user_loop = False
         channel_lengths = []
-        for channel in range(1, 5):
+        if self.options.noiseless:
+            if len(self.part_list) >= 4:
+                self.part_list = self.part_list[:3]
+        else:
+            if len(self.part_list) > 4:
+                self.part_list = self.part_list[:4]
+        for channel in range(1, len(self.part_list) + 1):
             print(self.term_text.converting_channel(channel, self.part_list))
             if channel == 1:
                 channel_parser = ParseChannel1(self.options, self.song_pointer)
