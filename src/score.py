@@ -69,8 +69,15 @@ class ProcessScore():
                 # The tempo parameter is fetched because the text isn't always
                 # consistent with the actual tempo. This also allows for
                 # handling less standard tempo indication.
-                bpm = int(channel_part.find(
-                    './measure/direction/sound').get('tempo'))
+                try:
+                    bpm = int(channel_part.find(
+                        './measure/direction/sound').get('tempo'))
+                except AttributeError:
+                    if self.options.tempo is not None:
+                        bpm = self.options.tempo
+                    else:
+                        bpm = 120
+                        print(self.term_text.no_tempo_warning)
                 # We need the divisions so that the bpm can be adjusted.
                 divisions = int(channel_part.find(
                     './measure/attributes/divisions').text)

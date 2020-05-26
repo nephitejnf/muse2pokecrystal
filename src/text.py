@@ -144,10 +144,12 @@ class TerminalText():
                                       '\nConversion incomplete!' +
                                       Color(self.colored).end)
 
-        self.no_tempo_error = (Color(self.colored).error +
-                               'No tempo was detected. ' +
-                               'Try again with the --tempo parameter.' +
-                               Color(self.colored).end)
+        self.no_tempo_warning = (Color(self.colored).warning +
+                                 'No tempo was detected.\n' +
+                                 'Falling back to 120 bpm.\n'
+                                 'To specify a tempo, use the ' +
+                                 '--tempo parameter.' +
+                                 Color(self.colored).end)
 
         self.desync_error = (Color(self.colored).error +
                              'User defined loops are inconsistent ' +
