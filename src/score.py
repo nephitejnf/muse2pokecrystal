@@ -44,7 +44,13 @@ class ProcessScore():
         self.add_headers()
         already_found_user_loop = False
         channel_lengths = []
-        for channel in range(1, 5):
+        if self.options.noiseless:
+            if len(self.part_list) >= 4:
+                self.part_list = self.part_list[:3]
+        else:
+            if len(self.part_list) > 4:
+                self.part_list = self.part_list[:4]
+        for channel in range(1, len(self.part_list) + 1):
             print(self.term_text.converting_channel(channel, self.part_list))
             if channel == 1:
                 channel_parser = ParseChannel1(self.options, self.song_pointer)
@@ -63,8 +69,15 @@ class ProcessScore():
                 # The tempo parameter is fetched because the text isn't always
                 # consistent with the actual tempo. This also allows for
                 # handling less standard tempo indication.
-                bpm = int(channel_part.find(
-                    './measure/direction/sound').get('tempo'))
+                try:
+                    bpm = int(channel_part.find(
+                        './measure/direction/sound').get('tempo'))
+                except AttributeError:
+                    if self.options.tempo is not None:
+                        bpm = self.options.tempo
+                    else:
+                        bpm = 120
+                        print(self.term_text.no_tempo_warning)
                 # We need the divisions so that the bpm can be adjusted.
                 divisions = int(channel_part.find(
                     './measure/attributes/divisions').text)
@@ -173,10 +186,10 @@ class ChannelParse():
 
     def get_initial_channel_commands(self):
         """Use configuration if specified, if not use fallback."""
-        if self.song_config is None:
-            self.get_fallback_channel_commands()
-        else:
+        try:
             return self.song_config.read_channel_conf(self.channel)
+        except AttributeError:
+            return self.get_fallback_channel_commands()
 
     def get_fallback_channel_commands(self):
         """Meant to be overwritten by inheritance."""
@@ -189,18 +202,17 @@ class ParseChannel1(ChannelParse):
         super().__init__(options, song_pointer, 1)
 
     def get_initial_channel_commands(self, tempo):
-        """Use configuration if specified, if not use fallback."""
-        if self.song_config is None:
-            self.get_fallback_channel_commands(tempo)
-        else:
-            commands = []
+        """Use configuration if specified, if not, use fallback."""
+        commands = []
+        try:
             commands.append(self.output_text.format_tempo_command(tempo))
             commands.extend(self.song_config.read_channel_conf(self.channel))
-            return commands
+        except AttributeError:
+            commands.extend(self.get_fallback_channel_commands())
+        return commands
 
-    def get_fallback_channel_commands(self, tempo):
+    def get_fallback_channel_commands(self):
         commands = []
-        commands.append(self.output_text.format_tempo_command(tempo))
         commands.append(self.output_text.volume)
         commands.append(self.output_text.notetype_12)
         commands.append(self.output_text.dutycycle)

@@ -123,6 +123,13 @@ class TerminalText():
                 '.' +
                 Color(self.colored).end)
 
+    def chord_ignore(self, measure):
+        return (Color(self.colored).warning +
+                'Ignoring top notes in chord at measure ' +
+                str(measure) +
+                '.' +
+                Color(self.colored).end)
+
     def set_constant_text(self):
         """Set all the constant text."""
         self.custom_loop_error = (Color(self.colored).error +
@@ -137,10 +144,12 @@ class TerminalText():
                                       '\nConversion incomplete!' +
                                       Color(self.colored).end)
 
-        self.no_tempo_error = (Color(self.colored).error +
-                               'No tempo was detected. ' +
-                               'Try again with the --tempo parameter.' +
-                               Color(self.colored).end)
+        self.no_tempo_warning = (Color(self.colored).warning +
+                                 'No tempo was detected.\n' +
+                                 'Falling back to 120 bpm.\n'
+                                 'To specify a tempo, use the ' +
+                                 '--tempo parameter.' +
+                                 Color(self.colored).end)
 
         self.desync_error = (Color(self.colored).error +
                              'User defined loops are inconsistent ' +
@@ -182,8 +191,14 @@ class TerminalText():
 
         self.high_volume_warning = (Color(self.colored).warning +
                                     'Volume setting exceeds $77. ' +
-                                    'This may cause unintended behavior.' +
+                                    'Correcting volume to $77.' +
                                     Color(self.colored).end)
+
+        self.grace_notes_unsupported = (Color(self.colored).warning +
+                                        'Grace notes are not supported. ' +
+                                        'Try using a pitch slide or ' +
+                                        'simplifying the note.' +
+                                        Color(self.colored).end)
 
         self.generic_name = (Color(self.colored).info +
                              'Could not guess song name. Using generic name.' +
@@ -191,7 +206,7 @@ class TerminalText():
 
         self.no_noise_channel = (Color(self.colored).info +
                                  'No noise channel. ' +
-                                 'Reprocessing without noise channel...' +
+                                 'Reprocessing without noise channel.' +
                                  Color(self.colored).end)
 
         self.conversion_success = (Color(self.colored).complete +
@@ -321,6 +336,9 @@ class OutputText():
 
     @staticmethod
     def octave_change(octave):
+        if octave > 8 or octave < 1:
+            raise ValueError(
+                'Invalid octave {}'.format(octave))
         return '\toctave {}\n'.format(octave)
 
     @staticmethod

@@ -53,6 +53,7 @@ class ParseStaff():
         # Set the current octave to -1 so it's always
         # overridden by the first iteration.
         self.cur_octave = -1
+        self.pre_loop_octave = -1
         # List to return for file output
         self.staff_output = []
         # Lists to store commands to be released when the next note is found
@@ -72,12 +73,33 @@ class ParseStaff():
                             len(self.trivial_command_queue) > 0):
                         self.release_rest_queue()
                     self.release_command_queue()
-                    self.process_notes(command)
+                    # Only process voice 1 to avoid desyncs
+                    if int(command.find('voice').text) == 1:
+                        self.process_notes(command)
+        if (self.found_user_loops and
+                self.pre_loop_octave is not self.cur_octave):
+            octave_index = self.staff_output.index(
+                '\n' + self.output_text.channel_loop_label(self.channel)) + 1
+            if 'octave' not in self.staff_output[octave_index]:
+                try:
+                    self.staff_output.insert(
+                        octave_index, self.output_text.octave_change(
+                            self.pre_loop_octave))
+                except ValueError:
+                    pass
         # Generate the rests at the end of the score
         self.release_rest_queue()
 
     def process_notes(self, note):
         full_note = None
+        if note.find('chord') is not None:
+            print(self.term_text.chord_ignore(self.measure_iterator))
+            # Early return so we don't have to deal with attribute errors
+            return
+        if note.find('grace') is not None:
+            print(self.term_text.grace_notes_unsupported)
+            # Early return so we don't have to deal with attribute errors
+            return
         # WARNING: rests may occasionally mess with the command order!
         if note.find('rest') is not None:
             self.rest_length_queue += int(note.find('duration').text)
@@ -183,6 +205,13 @@ class ParseStaff():
         elif int(altered_pitch) == 1:
             nibble = '#'
         formatted_note = '{}{}'.format(step, nibble)
+        # Handle an out of the ordinary octave change
+        if formatted_note == 'Cb':
+            if 'octave' in self.staff_output[-1]:
+                self.staff_output.pop(-1)
+            self.staff_output.append(
+                self.output_text.octave_change(
+                    self.cur_octave - 1))
         # Respell flat and odd notes
         if formatted_note in bad_notes:
             formatted_note = bad_notes[formatted_note]
@@ -216,9 +245,9 @@ class ParseStaff():
     def handle_loop(self, command_text):
         """Handle user defined loops."""
         if command_text == 'loop':
+            self.pre_loop_octave = self.cur_octave
             self.found_user_loops = True
-            return 'Music_{}_Ch{}_Loop:\n'.format(
-                self.song_pointer, self.channel)
+            command_text = self.output_text.channel_loop_label(self.channel)
         return command_text
 
     def release_command_queue(self):
