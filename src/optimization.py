@@ -28,26 +28,29 @@ def callchannel_optimize(output_array):
     backup_array = output_array
     search_array = []
     search_match = True
-    match_index_array = []
-    cur_file_index = 0
+    match_index_array = [[]]
+    found_ideal_optimization = False
+    #cur_file_index = 0
     # minimum search length is 4
-    search_size = 4
-    for index in range(cur_file_index, search_size):
-        search_array.append(output_array[index])
-    print(search_array)
-    # check matches
-    for file_index in range(0, len(output_array)):
-        if search_array[0] == output_array[file_index]:
-            # we may have a match bois
-            search_match = True
-            for check_match_index in range(0, search_size):
-                if(search_array[check_match_index] !=
-                        output_array[file_index + check_match_index]):
-                    search_match = False
-                    break
-            if search_match:
-                match_index_array.append(file_index)
-    print(match_index_array)
+    for cur_file_index in range(0, len(output_array)):
+        search_size = 4
+        while not found_ideal_optimization:
+            for index in range(cur_file_index, search_size):
+                search_array.append(output_array[index])
+            print(search_array)
+            # check matches
+            for file_index in range(0, len(output_array)):
+                if search_array[0] == output_array[file_index]:
+                    # we may have a match bois
+                    search_match = True
+                    for check_match_index in range(0, search_size):
+                        if(search_array[check_match_index] !=
+                           output_array[file_index + check_match_index]):
+                            search_match = False
+                            break
+                    if search_match:
+                        match_index_array.append(file_index)
+                        print(match_index_array)
 
 
 if __name__ == "__main__":
