@@ -137,7 +137,6 @@ class TerminalText():
                 Color(self.colored).end)
 
 
-
     def checksum_wrong(self, checksums):
         for sum in checksums:
             print(sum.hex())
