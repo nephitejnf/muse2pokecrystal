@@ -24,9 +24,7 @@ Full plain text license https://www.gnu.org/licenses/agpl-3.0.txt
 
 
 import argparse
-from os.path import isfile as filehere
-from src import text, fileio
-import muse2pokecrystal as legacy
+from src import text, fileio, bundle, exceptions
 
 TERM_TEXT = text.TerminalText(False)
 
@@ -36,6 +34,7 @@ def main():
     parser.add_argument('musicxml',
                         help=TERM_TEXT.arg_musicxml_desc)
     parser.add_argument('asm',
+                        metavar='output',
                         help=TERM_TEXT.arg_asm_desc)
     parser.add_argument('-c', '--config',
                         help=TERM_TEXT.arg_config_desc)
@@ -51,27 +50,75 @@ def main():
     parser.add_argument('-f', '--overwrite',
                         action='store_true',
                         help=TERM_TEXT.arg_overwrite_desc)
-    parser.add_argument('-l', '--custom-loop',
-                        action='store_true',
-                        help=TERM_TEXT.arg_custom_loop_desc)
     parser.add_argument('-C', '--colored-output',
                         action='store_true',
                         help=TERM_TEXT.arg_colored_output_desc)
     parser.add_argument('-x', '--no-optimizations',
                         action='store_true',
                         help=TERM_TEXT.arg_no_optimizations_desc)
+    parser.add_argument('-p', '--pack',
+                        metavar='FILE',
+                        help=TERM_TEXT.arg_pack_desc)
+    parser.add_argument('-P', '--pack-only',
+                        action='store_true',
+                        help=TERM_TEXT.arg_pack_only_desc)
+    parser.add_argument('-u', '--unpack',
+                        action='store_true',
+                        help=TERM_TEXT.arg_unpack_desc)
     parser.add_argument('-v', '--version', action='version',
                         version=TERM_TEXT.version)
     args = parser.parse_args()
-    if filehere(args.asm) and args.overwrite is False:
-        confirm = input(args.asm +
-                        text.TerminalText
-                        (args.colored_output)
-                        .overwrite_prompt)
-        if confirm in ['y', 'Y']:
-            fileio.write_music_file(args)
+
+    # pack creation
+    if args.pack is not None:
+        if args.config is None:
+            raise exceptions.MusicConfigError(
+                text.TerminalText(args.colored_output).conf_required)
+        if fileio.check_overwrite(args.pack,
+                                  args.overwrite,
+                                  args.colored_output):
+            try:
+                files = fileio.make_temp_copy_pack(args.musicxml, args.config)
+            except FileExistsError:
+                fileio.delete_temp_dir()
+                files = fileio.make_temp_copy_pack(args.musicxml, args.config)
+            bundle.create_pack(args.pack, files, args.colored_output)
+
+    if args.pack_only:
+        # args.asm is the output for the pack in this case
+        if fileio.check_overwrite(args.asm,
+                                  args.overwrite,
+                                  args.colored_output):
+            try:
+                files = fileio.make_temp_copy_pack(args.musicxml, args.config)
+            except FileExistsError:
+                fileio.delete_temp_dir()
+                files = fileio.make_temp_copy_pack(args.musicxml, args.config)
+            bundle.create_pack(args.asm,
+                               files,
+                               args.colored_output)
+
     else:
-        fileio.write_music_file(args)
+        # unpacking
+        if args.unpack:
+            try:
+                size = fileio.make_temp_copy_unpack(args.musicxml)
+            except FileExistsError:
+                fileio.delete_temp_dir()
+                size = fileio.make_temp_copy_unpack(args.musicxml)
+            # unpack from temporary copy
+            bundle.unpack('/tmp/muse2pokecrystal/pack.tar.xz',
+                          size,
+                          args.colored_output)
+            overwrite_args = fileio.guess_files()
+            args.musicxml = overwrite_args['musicxml']
+            args.config = overwrite_args['config']
+
+        # conversion
+        if fileio.check_overwrite(args.asm,
+                                  args.overwrite,
+                                  args.colored_output):
+            fileio.write_music_file(args)
 
 
 if __name__ == "__main__":

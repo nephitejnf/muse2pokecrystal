@@ -45,3 +45,12 @@ class MusicConfigError(ValueError):
         """Inherit exception."""
         super().__init__(message)
         self.errors = errors
+
+
+class HashFailureError(EOFError):
+    """Checksum failure exception."""
+
+    def __init__(self, message=None, errors=None):
+        """Inherit exception."""
+        super().__init__(message)
+        self.errors = errors

@@ -27,7 +27,7 @@ class Color():
     Constants for formatting terminal output.
 
     Unused color codes that may be useful for future reference:
-    self.blue = '\033[94m'
+    blue = '\033[94m'
     cyan = '\033[96m'
 
     """
@@ -130,16 +130,25 @@ class TerminalText():
                 '.' +
                 Color(self.colored).end)
 
+    def verified_checksum(self, checksum):
+        return (Color(self.colored).success +
+                'Verified checksum: ' +
+                str(checksum.hex()) +
+                Color(self.colored).end)
+
+
+
+    def checksum_wrong(self, checksums):
+        for sum in checksums:
+            print(sum.hex())
+        return (Color(self.colored).error +
+                'Checksum does not match the one at the end' +
+                ' of the file. The pack may be corrupted or' +
+                ' was not packed with muse2pokecrystal.' +
+                Color(self.colored).end)
+
     def set_constant_text(self):
         """Set all the constant text."""
-        self.custom_loop_error = (Color(self.colored).error +
-                                  'A user defined loop was found; however, ' +
-                                  'the --custom-loop parameter' +
-                                  ' was not toggled.\n' +
-                                  'Try again with the ' +
-                                  '--custom-loop parameter.\n' +
-                                  Color(self.colored).end)
-
         self.conversion_incomplete = (Color(self.colored).error +
                                       '\nConversion incomplete!' +
                                       Color(self.colored).end)
@@ -217,6 +226,11 @@ class TerminalText():
                               'Adding Header Info' +
                               Color(self.colored).end)
 
+        self.conf_required = (Color(self.colored).error +
+                              'Configuration file is required ' +
+                              'to make a pack.' +
+                              Color(self.colored).end)
+
         self.prog_description = ('Convert MusicXML sheet music'
                                  ' into a script that\'s'
                                  ' compatible with Pokémon Crystal\'s'
@@ -236,12 +250,17 @@ class TerminalText():
 
         self.arg_overwrite_desc = 'overwrite output file without prompting'
 
-        self.arg_custom_loop_desc = ('process user defined loops'
-                                     '(to be depreciated)')
-
         self.arg_colored_output_desc = 'color code terminal output'
 
         self.arg_no_optimizations_desc = 'disable optimizations'
+
+        self.arg_pack_desc = ('pack sheet music and configuration '
+                              'for distribution')
+
+        self.arg_pack_only_desc = 'pack to output, don\'t convert to asm'
+
+        self.arg_unpack_desc = ('unpack a generated music '
+                                'bundle and convert it')
 
         self.version = 'Muse2pokecrystal Git Development Version'
 
