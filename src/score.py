@@ -70,7 +70,7 @@ class ProcessScore():
                 # consistent with the actual tempo. This also allows for
                 # handling less standard tempo indication.
                 try:
-                    bpm = int(channel_part.find(
+                    bpm = float(channel_part.find(
                         './measure/direction/sound').get('tempo'))
                 except AttributeError:
                     if self.options.tempo is not None:
@@ -145,7 +145,12 @@ class ProcessScore():
                 song_title = 'Song'
         else:
             song_title = self.options.name
-        return song_title.replace(':', '').replace(' ', '')
+        # get rid of naughty characters
+        song_title = song_title.replace(':', '')
+        song_title = song_title.replace(' ', '')
+        song_title = song_title.replace('\'', '')
+        song_title = song_title.replace('"', '')
+        return song_title
 
     def check_part_list_length(self):
         """

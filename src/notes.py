@@ -232,7 +232,7 @@ class ParseStaff():
             # It only tries this on channel 1 because all other channels give
             # None as a parameter for divisions which causes an Exception.
             try:
-                bpm = int(command.find('./sound').get('tempo'))
+                bpm = float(command.find('./sound').get('tempo'))
                 tempo = str(calc_score_tempo(bpm, divisions))
                 command_text = 'tempo ' + tempo
                 self.num_tempo_changes += 1
