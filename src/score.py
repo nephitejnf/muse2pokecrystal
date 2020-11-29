@@ -23,7 +23,7 @@ Full plain text license https://www.gnu.org/licenses/agpl-3.0.txt
 
 
 from xml.etree.ElementTree import parse
-from src import text, notes, exceptions, config
+from src import text, notes, exceptions, config, optimize
 
 
 class ProcessScore():
@@ -126,6 +126,9 @@ class ProcessScore():
             self.output_file_store.extend(parse_staff.staff_output)
             self.output_file_store.append(
                 self.output_text.channel_loop_end(channel))
+        
+        if not self.options.no_optimizations:
+            optimize.optimize(self.output_file_store, self.song_pointer)
         return self.output_file_store
 
     def populate_part_list(self):
