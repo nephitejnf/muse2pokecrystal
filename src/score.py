@@ -39,6 +39,7 @@ class ProcessScore():
         self.output_text = text.OutputText(self.song_pointer)
         self.populate_part_list()
         self.check_part_list_length()
+        self.truncate_flag = False
 
     def process_to_file_store(self):
         self.add_headers()
@@ -93,18 +94,22 @@ class ProcessScore():
                                            channel,
                                            self.song_pointer,
                                            self.options)
-            parse_staff.output_notes(divisions)
+            staff_callback = parse_staff.output_notes(divisions)
+            if staff_callback == 'truncate':
+                self.truncate_flag = True
             # Check for desync errors
             # Channel length parity check
             channel_lengths.append(parse_staff.channel_length)
-            if len(channel_lengths) > 1:
-                if (channel_lengths[channel - 1] !=
-                        channel_lengths[channel - 2]):
-                    for chan in range(0, len(channel_lengths)):
-                        print('Channel {} length: '.format(chan + 1) +
-                              str(channel_lengths[chan]))
-                    raise exceptions.MusicDesyncError(
-                        self.term_text.parity_check_failed, channel_lengths)
+            # If the reserved truncate command is found, the length check needs to be skipped.
+            if self.truncate_flag == False:
+                if len(channel_lengths) > 1:
+                    if (channel_lengths[channel - 1] !=
+                            channel_lengths[channel - 2]):
+                        for chan in range(0, len(channel_lengths)):
+                            print('Channel {} length: '.format(chan + 1) +
+                                str(channel_lengths[chan]))
+                        raise exceptions.MusicDesyncError(
+                            self.term_text.parity_check_failed, channel_lengths)
             # Check to make sure user defined loops are consistent
             if parse_staff.found_user_loops is False:
                 if already_found_user_loop is True:

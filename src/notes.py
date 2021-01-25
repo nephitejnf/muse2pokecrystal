@@ -63,11 +63,16 @@ class ParseStaff():
         self.num_tempo_changes = 0
 
     def output_notes(self, divisions=None):
+        com_callback = ''
         for measure in self.part.findall('measure'):
             self.measure_iterator += 1
             for command in measure:
                 if command.tag == "direction":
-                    self.process_commands(command, divisions)
+                    self.release_rest_queue()
+                    com_callback = self.process_commands(command, divisions)
+                    # Truncation stops the channel processing early
+                    if com_callback == 'truncate':
+                        break
                 if command.tag == 'note':
                     if (len(self.priority_command_queue) > 0 and
                             len(self.trivial_command_queue) > 0):
@@ -76,6 +81,8 @@ class ParseStaff():
                     # Only process voice 1 to avoid desyncs
                     if int(command.find('voice').text) == 1:
                         self.process_notes(command)
+            if com_callback == 'truncate':
+                break
         if (self.found_user_loops and
                 self.pre_loop_octave is not self.cur_octave):
             octave_index = self.staff_output.index(
@@ -89,6 +96,7 @@ class ParseStaff():
                     pass
         # Generate the rests at the end of the score
         self.release_rest_queue()
+        return com_callback
 
     def process_notes(self, note):
         full_note = None
@@ -220,6 +228,9 @@ class ParseStaff():
     def process_commands(self, command, divisions):
         try:
             command_text = command.find('./direction-type/words').text
+            # Handle channel truncation
+            if command_text.lower() == 'truncate':
+                return 'truncate'
             if '@' in command_text:
                 command_array = command_text[1:].split(' ', 1)
                 command_array[1] = self.handle_loop(command_array[1])
