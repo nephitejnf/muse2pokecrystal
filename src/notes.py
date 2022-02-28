@@ -194,6 +194,7 @@ class ParseStaff():
                      'B#': 'C_',
                      'Ab': 'G#',
                      'Gb': 'F#',
+                     'Fb': 'E_',
                      'Eb': 'D#',
                      'Db': 'C#',
                      'Bb': 'A#',
