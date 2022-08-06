@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 """
 The main function and argument parsing for Muse2pokecrystal.
 
