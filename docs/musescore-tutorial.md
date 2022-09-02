@@ -27,9 +27,9 @@ Alternatively, notes in a chord can be played sequentially in a channel if the c
 Tuplets are currently unsupported. They can be faked by alternating between lengths every other note.
 For example, ` 1/4 - 1/4 - 1/4` in a triplet could be `1/8 - 1/4 - 1/8`.
 
-Tied notes are supported. However, **any tie lasting longer than a whole note is wholly unsupported at this time**.
-
-Notes must be no smaller than `1/16`.
+Tied notes are supported. However, **any tie lasting longer than a 16 times the length of the shortest note is unsupported at this time**. For example, if the smallest note in your score is `1/16`, then a whole note
+would be the largest note that can be played. Longer and shorter notes can be faked by changing the
+`notetype` property of the channel, or changing the tempo of the song at that particular point.
 
 ### Music Sources
 In most cases, the music you source will not fulfil every requirement needed to convert the score correctly. The best approach is to copy/paste
@@ -43,6 +43,7 @@ to help you get started.
 #### Native Musescore Sources
 Sourcing from a native Musescore or MusicXML file will generally give the cleanest results. [Musescore has a website](https://musescore.com)
 but recently put up a paywall to restrict downloading access. If you have a Musescore.com account **use this method!**
+If you are creating a new song from scratch in Musescore, it will be saved in this format by default.
 
 #### Importing PDFs
 [Musescore's website](https://musescore.com/import) offers free experimental functionality to convert PDFs to scores.
@@ -53,7 +54,7 @@ Some sites only offer downloads for `.mus` files, which can't be directly opened
 and then exported to MusicXML within Finale. This method should also work for the trial version of Finale. This has not yet been tested.
 
 ### Saving your MusicXML
-You can save the project in Musescore's format, but I recommend just exporting as MusicXML from the file menu > export.
+To export MusicXML in Musescore, navigate to `File` > `Export`.
 You can still open the MusicXML in Musescore for later editing; that way you leave less artifacts later.
 The MusicXML won't be edited by the script, just read.
 
