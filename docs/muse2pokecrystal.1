@@ -1,0 +1,66 @@
+.TH Muse2Pokecrystal 1
+.SH NAME
+Muse2Pokecrystal \- A utility for converting MusicXML to ASM for use in the Pokemon Crystal music engine via the Pokecrystal disassembly
+.SH SYNOPSIS
+.B muse2pokecrystal.py
+[\fIINPUT\fR] [\fIOUTPUT\fR] [\fIOPTIONS\fR]
+.SH DESCRIPTION
+Muse2Pokecrystal converts a MusicXML file exported from applications like MuseScore and converts it to assembly using macros is the Pokecrystal disassembly. This makes it easier to write music on a score and import it into a Pokemon Crystal romhack. It does have functionality for some basic code optimization, thus making the music instructions smaller after compiling.
+.SH OPTIONS
+.TP
+.BR \-\-name " STRING"
+Manually set the exported name of the song
+.TP
+.BR \-\-tempo " BPM"
+Manually set the tempo of the song
+.TP
+.BR \-\-config " FILE"
+Specify a config file to use for processing song
+.TP
+.BR \-\-noiseless
+Skip parsing noise channel
+.TP
+.BR \-\-no\-optimizations
+Skip optimizing song, optimizations are on by default
+.TP
+.BR \-\-overwrite
+Force output file and overwrite in case of an existing file
+.TP
+.BR \-\-colored\-output
+Color progress output
+.SH CONFIGURATION
+.TP
+The configuration file uses an INI format to define each music channel's settings. It defines various settings needed to set the sound of your channel.
+.TP
+Channels 1 through 3 have the same basic settings; notetype, intensity, tone, stereopanning, and vibrato, which includes settings for delay and extent. These values are defined using hexadecimal values. There is also support for custom commands on each channel if such commands are supported in the intended project.
+.TP
+Some channels have unique setting due to their channel type. Channels 1 and 2 have an additional setting for dutycycle for affecting the square waveform of the channel. The only accepted values are 0-3, which make the waveform 12.5%, 25%, 50% and 75% respectively.
+.TP
+Channel 4 is a dedicate noise channel. The only setting available for it in the configuration are note type, noise toggle, and stereopanning. Custom commands are also available if the intended project supports it.
+.BR
+.IP
+[Channel 1]
+.IP
+volume = $77
+.IP
+notetype = $c
+.IP
+intensity = $95
+.IP
+dutycycle = $2
+.IP
+tone =
+.IP
+stereopanning = $ff
+.IP
+vibrato = false
+.IP
+vibrato_delay = $00
+.IP
+vibrato_extent = $00
+.SH AUTHORS
+.SS Current Maintainers:
+.TP
+nephitejnf
+.TP
+hyperdriveguy
